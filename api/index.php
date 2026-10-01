@@ -17,6 +17,11 @@
 define('APP_ROOT', dirname(__DIR__));
 chdir(APP_ROOT);
 
+// ── Tampilkan error untuk debugging (HAPUS setelah masalah solved) ──
+ini_set('display_errors', '1');
+ini_set('display_startup_errors', '1');
+error_reporting(E_ALL);
+
 // ── Baca path dari URL ────────────────────────────────────────
 $uri  = $_SERVER['REQUEST_URI'] ?? '/';
 $path = parse_url($uri, PHP_URL_PATH);
