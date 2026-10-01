@@ -4,6 +4,14 @@ function h($text) {
     return htmlspecialchars($text ?? '', ENT_QUOTES, 'UTF-8');
 }
 
+// Redirect absolut — aman di Vercel serverless
+function redirect(string $path): void {
+    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    $host   = $_SERVER['HTTP_HOST'] ?? 'localhost';
+    header('Location: ' . $scheme . '://' . $host . $path);
+    exit;
+}
+
 // Format tanggal Indonesia sederhana, contoh: 23 Sep 2026
 function tgl($datetime) {
     $bulan = ['01'=>'Jan','02'=>'Feb','03'=>'Mar','04'=>'Apr','05'=>'Mei','06'=>'Jun',

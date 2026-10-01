@@ -1,4 +1,15 @@
-<?php
+﻿<?php
 require 'includes/auth.php';
-header('Location: galeri.php#instagramAdmin');
+
+        $inner = <?php
+require 'includes/auth.php';
+redirect('/admin/galeri.php#instagramAdmin');
+exit;.Groups[1].Value
+        # Jika path sudah mulai dengan / biarkan, kalau tidak tambah /admin/
+        if ($inner -match '^/') {
+            "redirect('$inner')"
+        } else {
+            "redirect('/admin/$inner')"
+        }
+    ;
 exit;

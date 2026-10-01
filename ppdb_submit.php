@@ -2,7 +2,7 @@
 require 'config/db.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Location: index.php');
+    header('Location: /index.php');
     exit;
 }
 
@@ -14,7 +14,7 @@ $whatsapp  = trim($_POST['whatsapp'] ?? '');
 
 // Validasi sederhana: semua field wajib diisi
 if ($nama_anak === '' || $usia_anak === '' || $nama_ortu === '' || $alamat === '' || $whatsapp === '') {
-    header('Location: index.php?gagal=1#ppdb');
+    header('Location: /index.php?gagal=1#ppdb');
     exit;
 }
 
@@ -24,5 +24,5 @@ $stmt = $pdo->prepare(
 );
 $stmt->execute([$nama_anak, $nama_ortu, $alamat, $whatsapp, $usia_anak]);
 
-header('Location: index.php?sukses=1#ppdb');
+header('Location: /index.php?sukses=1#ppdb');
 exit;

@@ -1,10 +1,18 @@
 <?php
+<?php
 session_start();
 require __DIR__ . '/../config/db.php';
 require __DIR__ . '/../includes/functions.php';
 
+// Helper URL absolut
+function abs_url(string $path): string {
+    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    $host   = $_SERVER['HTTP_HOST'] ?? 'localhost';
+    return $scheme . '://' . $host . $path;
+}
+
 if (isset($_SESSION['admin_id'])) {
-    header('Location: dashboard.php');
+    header('Location: ' . abs_url('/admin/dashboard.php'));
     exit;
 }
 
@@ -32,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['admin_id']   = $admin['id'];
         $_SESSION['admin_nama'] = $admin['nama'];
         $_SESSION['admin_foto'] = $admin['foto'] ?? null;
-        header('Location: dashboard.php');
+        header('Location: ' . abs_url('/admin/dashboard.php'));
         exit;
     } else {
         $error = 'Username atau password salah.';
