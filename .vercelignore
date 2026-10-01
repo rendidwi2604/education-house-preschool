@@ -1,0 +1,35 @@
+# ============================================================
+# .vercelignore — File yang TIDAK di-upload ke Vercel
+# ============================================================
+
+# Konfigurasi database (sensitif — JANGAN upload)
+config/db.php
+
+# File SQL & migrasi (hanya untuk setup Supabase, tidak dibutuhkan di hosting)
+*.sql
+migration/
+config/migrate_*.sql
+tk_pelangi_ceria.sql
+
+# Dokumentasi & README
+README.md
+DEPLOYMENT_GUIDE.md
+
+# Development tools
+.vscode/
+.git/
+.gitignore
+
+# Node modules (jika ada)
+node_modules/
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+desktop.ini
+*.log
+
+# Backup files
+*.bak
+*.orig
+*.tmp

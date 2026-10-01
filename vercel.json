@@ -1,0 +1,36 @@
+{
+  "functions": {
+    "api/**/*.php": {
+      "runtime": "vercel-php@0.7.4"
+    }
+  },
+  "routes": [
+    { "src": "/assets/(.*)",  "dest": "/assets/$1" },
+    { "src": "/favicon\\.ico", "dest": "/assets/img/Logo_EduHouse.png" },
+
+    { "src": "/index\\.php(.*)",            "dest": "/api/index.php$1" },
+    { "src": "/berita_detail\\.php(.*)",    "dest": "/api/berita_detail.php$1" },
+    { "src": "/guru_detail\\.php(.*)",      "dest": "/api/guru_detail.php$1" },
+    { "src": "/ppdb_submit\\.php(.*)",      "dest": "/api/ppdb_submit.php$1" },
+
+    { "src": "/admin/login\\.php(.*)",      "dest": "/api/admin/login.php$1" },
+    { "src": "/admin/logout\\.php(.*)",     "dest": "/api/admin/logout.php$1" },
+    { "src": "/admin/dashboard\\.php(.*)",  "dest": "/api/admin/dashboard.php$1" },
+    { "src": "/admin/berita\\.php(.*)",     "dest": "/api/admin/berita.php$1" },
+    { "src": "/admin/berita_form\\.php(.*)", "dest": "/api/admin/berita_form.php$1" },
+    { "src": "/admin/galeri\\.php(.*)",     "dest": "/api/admin/galeri.php$1" },
+    { "src": "/admin/guru\\.php(.*)",       "dest": "/api/admin/guru.php$1" },
+    { "src": "/admin/guru_form\\.php(.*)",  "dest": "/api/admin/guru_form.php$1" },
+    { "src": "/admin/slider\\.php(.*)",     "dest": "/api/admin/slider.php$1" },
+    { "src": "/admin/slider_form\\.php(.*)", "dest": "/api/admin/slider_form.php$1" },
+    { "src": "/admin/instagram\\.php(.*)",  "dest": "/api/admin/instagram.php$1" },
+    { "src": "/admin/pendaftar\\.php(.*)",  "dest": "/api/admin/pendaftar.php$1" },
+    { "src": "/admin/pendaftar_export\\.php(.*)", "dest": "/api/admin/pendaftar_export.php$1" },
+    { "src": "/admin/profil\\.php(.*)",     "dest": "/api/admin/profil.php$1" },
+    { "src": "/admin/register\\.php(.*)",   "dest": "/api/admin/register.php$1" },
+    { "src": "/admin/forgot_password\\.php(.*)", "dest": "/api/admin/forgot_password.php$1" },
+    { "src": "/admin/(.*)",                 "dest": "/api/admin/$1" },
+
+    { "src": "/(.*)",                       "dest": "/api/index.php" }
+  ]
+}

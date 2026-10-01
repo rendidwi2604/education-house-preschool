@@ -1,0 +1,457 @@
+/* ============================================================
+   style.css  — Education House Preschool
+   Tailwind CSS dipakai di public pages (via CDN di header.php).
+   File ini hanya untuk: admin panel, komponen non-Tailwind,
+   dan override kecil.
+   ============================================================ */
+
+/* ---------- FONT ---------- */
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@400;600;700;800&display=swap');
+
+/* ---------- RESET MINIMAL ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+img { max-width: 100%; display: block; }
+a { color: inherit; }
+
+/* ---------- ADMIN SHELL ---------- */
+.admin-shell {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  min-height: 100vh;
+  font-family: 'Nunito', sans-serif;
+  background: #F8F4FF;
+}
+
+/* ---------- SIDEBAR ---------- */
+.side {
+  background: linear-gradient(160deg, #4C1D95 0%, #7C3AED 100%);
+  color: #fff;
+  padding: 28px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+.side .brand {
+  font-family: 'Baloo 2', sans-serif;
+  font-size: 16px;
+  font-weight: 800;
+  color: #fff;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 28px;
+  line-height: 1.2;
+}
+.side a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #DDD6FE;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 13.5px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  transition: background .2s, color .2s;
+}
+.side a:hover { background: rgba(255,255,255,.15); color: #fff; }
+.side a.on { background: #fff; color: #7C3AED; }
+.side .side-divider {
+  height: 1px;
+  background: rgba(255,255,255,.15);
+  margin: 10px 0;
+}
+
+/* ---------- ADMIN MAIN AREA ---------- */
+.main {
+  padding: 28px 32px;
+  font-family: 'Nunito', sans-serif;
+  min-width: 0;
+}
+
+/* ---------- TOPBAR ---------- */
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+.topbar h1 {
+  font-family: 'Baloo 2', sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  margin: 0;
+  color: #1E1B4B;
+}
+.admin-user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #6B7280;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 6px 14px;
+  background: #fff;
+  border-radius: 999px;
+  border: 1px solid #E9D5FF;
+  transition: box-shadow .2s;
+}
+.admin-user:hover { box-shadow: 0 2px 8px rgba(124,58,237,.15); }
+.admin-user img, .admin-avatar {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #EDE9FE;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+}
+
+/* ---------- DASHBOARD HERO ---------- */
+.dashboard-hero {
+  background: linear-gradient(135deg, #4C1D95 0%, #7C3AED 60%, #A78BFA 100%);
+  border-radius: 20px;
+  padding: 28px 32px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  position: relative;
+  overflow: hidden;
+}
+.dashboard-hero::before {
+  content: '🌟';
+  position: absolute;
+  right: 140px; top: -10px;
+  font-size: 80px;
+  opacity: .12;
+}
+.dashboard-hero::after {
+  content: '🎓';
+  position: absolute;
+  right: 20px; bottom: -14px;
+  font-size: 90px;
+  opacity: .12;
+}
+.dashboard-hero h2 {
+  font-family: 'Baloo 2', sans-serif;
+  font-size: 24px;
+  font-weight: 800;
+  color: #fff;
+  margin: 4px 0;
+}
+.dashboard-hero p { color: #DDD6FE; margin: 0; font-size: 14px; }
+.eyebrow {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: #FDE68A;
+}
+
+/* ---------- STAT ROW ---------- */
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.stat {
+  background: #fff;
+  border-radius: 16px;
+  padding: 20px;
+  border: 1px solid #EDE9FE;
+  box-shadow: 0 2px 10px rgba(124,58,237,.06);
+}
+.stat .num {
+  font-family: 'Baloo 2', sans-serif;
+  font-size: 30px;
+  font-weight: 800;
+  color: #7C3AED;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.stat .lbl { font-size: 13px; color: #6B7280; font-weight: 600; }
+
+/* ---------- DASHBOARD COLUMNS ---------- */
+.dashboard-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+/* ---------- PANEL ---------- */
+.panel {
+  background: #fff;
+  border: 1px solid #EDE9FE;
+  border-radius: 16px;
+  padding: 22px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 10px rgba(124,58,237,.04);
+}
+.panel h3 {
+  font-family: 'Baloo 2', sans-serif;
+  font-size: 16px;
+  font-weight: 800;
+  color: #1E1B4B;
+  margin: 0 0 16px;
+}
+.panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+.panel-head h3 { margin: 0; }
+
+/* ---------- TABLE ---------- */
+table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+th {
+  text-align: left;
+  color: #7C3AED;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  padding: 8px 10px;
+  border-bottom: 2px solid #EDE9FE;
+}
+td {
+  padding: 10px;
+  border-bottom: 1px solid #F3F0FF;
+  vertical-align: middle;
+  color: #374151;
+}
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: #FAFAFF; }
+
+/* ---------- TAGS / STATUS ---------- */
+.tag {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 700;
+  border: none;
+}
+.tag.new, .status-Baru    { background: #FEF3C7; color: #92400E; }
+.tag.ok,  .status-Diterima { background: #DCFCE7; color: #166534; }
+.status-Ditolak             { background: #FEE2E2; color: #991B1B; }
+
+/* ---------- MISC ADMIN ---------- */
+.link-edit   { color: #7C3AED; font-weight: 700; text-decoration: none; font-size: 13px; margin-right: 8px; }
+.link-danger { color: #DC2626; font-weight: 700; text-decoration: none; font-size: 13px; }
+.link-edit:hover   { text-decoration: underline; }
+.link-danger:hover { text-decoration: underline; }
+.empty-note  { color: #9CA3AF; text-align: center; font-size: 14px; padding: 20px 0; }
+.thumb {
+  width: 52px; height: 52px;
+  border-radius: 10px;
+  object-fit: cover;
+  background: #EDE9FE;
+}
+
+/* ---------- DROPZONE ---------- */
+.dropzone {
+  border: 2px dashed #C4B5FD;
+  border-radius: 14px;
+  padding: 28px;
+  text-align: center;
+  color: #7C3AED;
+  font-size: 14px;
+  margin-bottom: 14px;
+  background: #FAFAFF;
+  transition: border-color .2s, background .2s;
+}
+.dropzone:hover { border-color: #7C3AED; background: #EDE9FE; }
+
+/* ---------- GALLERY GRID (admin) ---------- */
+.gal-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; }
+.gal-grid .item img {
+  width: 100%; aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 12px;
+}
+.gal-grid .cap { font-size: 12px; margin: 6px 0 0; color: #6B7280; }
+
+/* ---------- FORM COMPONENTS (admin) ---------- */
+.form-group { margin-bottom: 16px; }
+.form-group label {
+  display: block;
+  font-weight: 700;
+  font-size: 13px;
+  margin-bottom: 5px;
+  color: #1E1B4B;
+}
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1.5px solid #DDD6FE;
+  font-family: 'Nunito', sans-serif;
+  font-size: 14px;
+  background: #fff;
+  color: #1F2937;
+  transition: border-color .2s, box-shadow .2s;
+}
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #7C3AED;
+  box-shadow: 0 0 0 3px rgba(124,58,237,.12);
+}
+.form-help { display: block; color: #9CA3AF; font-size: 12px; margin-top: 5px; }
+
+/* ---------- BUTTONS (admin) ---------- */
+.btn {
+  display: inline-block;
+  font-weight: 700;
+  padding: 10px 22px;
+  border-radius: 12px;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  font-family: 'Nunito', sans-serif;
+  font-size: 14px;
+  transition: filter .2s, transform .1s;
+}
+.btn:active { transform: scale(.97); }
+.btn-primary { background: #7C3AED; color: #fff; }
+.btn-primary:hover { filter: brightness(1.1); }
+.btn-ghost { background: transparent; border: 2px solid #7C3AED; color: #7C3AED; }
+.btn-ghost:hover { background: #EDE9FE; }
+.btn-danger { background: #DC2626; color: #fff; }
+.btn-danger:hover { filter: brightness(1.1); }
+
+/* ---------- ALERT ---------- */
+.alert { padding: 12px 16px; border-radius: 12px; margin-bottom: 18px; font-size: 14px; font-weight: 600; }
+.alert-success { background: #DCFCE7; color: #166534; border-left: 4px solid #16A34A; }
+.alert-error   { background: #FEE2E2; color: #991B1B; border-left: 4px solid #DC2626; }
+
+/* ---------- LOGIN PAGE ---------- */
+.login-shell {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: linear-gradient(135deg, #F8F4FF 0%, #EDE9FE 100%);
+  font-family: 'Nunito', sans-serif;
+}
+.login-box {
+  background: #fff;
+  border-radius: 24px;
+  padding: 40px;
+  width: 100%;
+  max-width: 380px;
+  border: 1px solid #EDE9FE;
+  box-shadow: 0 10px 40px rgba(124,58,237,.12);
+}
+.login-box .brand {
+  display: flex; align-items: center; gap: 8px;
+  justify-content: center;
+  font-family: 'Baloo 2', sans-serif;
+  font-size: 20px; font-weight: 800;
+  color: #7C3AED;
+  text-decoration: none;
+  margin-bottom: 6px;
+}
+.login-box p.sub { text-align: center; color: #6B7280; font-size: 13.5px; margin: 0 0 24px; }
+.login-box .btn-primary { width: 100%; text-align: center; margin-top: 6px; padding: 12px; border-radius: 12px; font-size: 15px; }
+.auth-links { display: flex; justify-content: space-between; gap: 12px; margin-top: 18px; font-size: 13px; }
+.auth-links a { color: #7C3AED; font-weight: 700; text-decoration: none; }
+.auth-links a:hover { text-decoration: underline; }
+
+/* ---------- PROFILE LAYOUT (admin) ---------- */
+.profile-layout { display: grid; grid-template-columns: 240px 1fr; gap: 24px; max-width: 720px; }
+.profile-card { text-align: center; }
+.profile-card .profile-photo,
+.profile-card .profile-placeholder {
+  display: block; width: 120px; height: 120px; max-width: 120px;
+  border-radius: 50%; object-fit: cover;
+  background: #EDE9FE; margin: 4px auto 16px;
+}
+.profile-placeholder { display: flex; align-items: center; justify-content: center; font-size: 56px; }
+.profile-card h2 { font-size: 20px; font-weight: 800; margin: 0 0 4px; font-family: 'Baloo 2', sans-serif; color: #1E1B4B; }
+.profile-card p { color: #6B7280; margin: 0; font-size: 14px; }
+
+/* ---------- TEACHER (admin) ---------- */
+.teacher-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; }
+.teacher-link { display: block; height: 100%; color: inherit; text-decoration: none; }
+.teacher-card {
+  background: #fff;
+  border: 1px solid #EDE9FE;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(124,58,237,.06);
+  transition: transform .2s, box-shadow .2s;
+  display: flex; flex-direction: column;
+}
+.teacher-link:hover .teacher-card { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(124,58,237,.14); }
+.teacher-card > img, .teacher-placeholder {
+  display: block; width: 100%; height: 180px;
+  object-fit: cover; background: #EDE9FE;
+}
+.teacher-placeholder { display: flex; align-items: center; justify-content: center; font-size: 70px; }
+.teacher-body { padding: 16px; }
+.teacher-body h3 { margin: 0 0 3px; font-size: 17px; font-weight: 800; font-family: 'Baloo 2', sans-serif; }
+.teacher-body span { color: #7C3AED; font-size: 13px; font-weight: 700; }
+.teacher-body .teacher-subject { color: #1E1B4B; font-weight: 700; margin: 8px 0 0; font-size: 13px; }
+.teacher-body p { color: #6B7280; font-size: 13px; line-height: 1.55; margin: 10px 0 0; }
+
+/* ---------- NEWS (admin) ---------- */
+.news-detail { max-width: 720px; margin: 0 auto; }
+.news-detail h1 { font-family: 'Baloo 2', sans-serif; font-size: 30px; line-height: 1.2; margin: 10px 0 4px; color: #1E1B4B; }
+.news-date { display: block; color: #9CA3AF; margin-bottom: 20px; font-size: 13px; }
+.news-detail-image { width: 100%; max-height: 360px; object-fit: cover; border-radius: 14px; margin: 0 0 24px; }
+.news-content { font-size: 15px; line-height: 1.8; color: #374151; margin-bottom: 24px; }
+
+/* ---------- RESPONSIVE ADMIN ---------- */
+@media (max-width: 900px) {
+  .admin-shell { grid-template-columns: 1fr; }
+  .side {
+    flex-direction: row; flex-wrap: nowrap;
+    overflow-x: auto; height: auto;
+    padding: 10px 12px; gap: 6px;
+    position: relative;
+  }
+  .side .brand { display: none; }
+  .dashboard-columns, .stat-row { grid-template-columns: 1fr 1fr; }
+  .teacher-grid { grid-template-columns: repeat(2,1fr); }
+  .profile-layout { grid-template-columns: 1fr; }
+  .main { padding: 20px 16px; }
+  .gal-grid { grid-template-columns: repeat(2,1fr); }
+}
+@media (max-width: 560px) {
+  .stat-row { grid-template-columns: 1fr 1fr; }
+  .dashboard-columns { grid-template-columns: 1fr; }
+  .teacher-grid { grid-template-columns: 1fr; }
+  .gal-grid { grid-template-columns: repeat(2,1fr); }
+}
+
+/* ---------- PUBLIC FOOTER ---------- */
+.site-footer-main {
+  max-width: 1152px;
+  margin: 0 auto;
+  padding: 48px 24px 32px;
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr 1.1fr;
+  gap: 36px;
+}
+@media (max-width: 900px) {
+  .site-footer-main { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px; }
+}
+@media (max-width: 560px) {
+  .site-footer-main { grid-template-columns: 1fr; gap: 24px; padding: 32px 20px 24px; }
+}
