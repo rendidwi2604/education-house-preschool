@@ -1,12 +1,12 @@
 <?php
-session_start();
 require __DIR__ . '/../../config/db.php';
 require __DIR__ . '/../../includes/functions.php';
+require __DIR__ . '/../../includes/session_handler.php';
 
-// Kalau belum login, redirect ke halaman login dengan URL absolut
+// Mulai session via DB handler (persistent di Vercel)
+db_session_start($pdo);
+
+// Kalau belum login, redirect ke halaman login
 if (!isset($_SESSION['admin_id'])) {
-    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-    $host   = $_SERVER['HTTP_HOST'] ?? 'localhost';
-    header('Location: ' . $scheme . '://' . $host . '/admin/login.php');
-    exit;
+    redirect('/admin/login.php');
 }

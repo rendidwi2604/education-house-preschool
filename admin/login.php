@@ -1,18 +1,13 @@
 <?php
-session_start();
 require __DIR__ . '/../config/db.php';
 require __DIR__ . '/../includes/functions.php';
+require __DIR__ . '/../includes/session_handler.php';
 
-// Helper URL absolut
-function abs_url(string $path): string {
-    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-    $host   = $_SERVER['HTTP_HOST'] ?? 'localhost';
-    return $scheme . '://' . $host . $path;
-}
+// Mulai session via DB handler (persistent di Vercel)
+db_session_start($pdo);
 
 if (isset($_SESSION['admin_id'])) {
-    header('Location: ' . abs_url('/admin/dashboard.php'));
-    exit;
+    redirect('/admin/dashboard.php');
 }
 
 $error = '';
@@ -39,8 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['admin_id']   = $admin['id'];
         $_SESSION['admin_nama'] = $admin['nama'];
         $_SESSION['admin_foto'] = $admin['foto'] ?? null;
-        header('Location: ' . abs_url('/admin/dashboard.php'));
-        exit;
+        redirect('/admin/dashboard.php');
     } else {
         $error = 'Username atau password salah.';
     }
