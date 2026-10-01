@@ -1,6 +1,16 @@
 ﻿<?php
 require __DIR__ . '/includes/auth.php';
+require __DIR__ . '/../includes/storage.php';
+
 $page_title = 'Slider Hero';
+
+// ── Helper: resolve URL gambar slider ──────────────────────
+// Gambar bisa berupa: URL Supabase (https://...) atau nama file lokal
+function slider_img_url(string $gambar, string $prefix = '../'): string {
+    if (empty($gambar)) return '';
+    if (str_starts_with($gambar, 'https://')) return $gambar;
+    return $prefix . 'assets/uploads/slider/' . $gambar;
+}
 
 // ── Hapus slide ──────────────────────────────────────────
 if (isset($_GET['hapus'])) {
@@ -8,20 +18,23 @@ if (isset($_GET['hapus'])) {
     $row = $pdo->prepare("SELECT gambar FROM slider WHERE id = ?");
     $row->execute([$id]);
     $r = $row->fetch();
-    if ($r && $r['gambar'] && file_exists(__DIR__ . '/../assets/uploads/slider/' . $r['gambar'])) {
-        unlink(__DIR__ . '/../assets/uploads/slider/' . $r['gambar']);
+    if ($r && !empty($r['gambar'])) {
+        if (str_starts_with($r['gambar'], 'https://')) {
+            // Hapus dari Supabase Storage
+            $filename = basename(parse_url($r['gambar'], PHP_URL_PATH));
+            supabase_delete('slider', $filename);
+        }
+        // File lokal di Vercel tidak bisa dihapus (read-only), abaikan
     }
     $pdo->prepare("DELETE FROM slider WHERE id = ?")->execute([$id]);
     redirect('/admin/slider.php?hapus_sukses=1');
-    exit;
 }
 
-// ── Toggle aktif / nonaktif ───────────────────────────────
+// ── Toggle aktif / nonaktif (PostgreSQL BOOLEAN) ──────────
 if (isset($_GET['toggle'])) {
     $id  = (int) $_GET['toggle'];
-    $pdo->prepare("UPDATE slider SET aktif = 1 - aktif WHERE id = ?")->execute([$id]);
+    $pdo->prepare("UPDATE slider SET aktif = NOT aktif WHERE id = ?")->execute([$id]);
     redirect('/admin/slider.php?update=1');
-    exit;
 }
 
 // ── Simpan urutan via AJAX POST ───────────────────────────
@@ -98,7 +111,8 @@ require __DIR__ . '/includes/admin_header.php';
       <tbody id="sortableBody">
         <?php foreach ($daftar as $i => $sl): ?>
         <?php
-          $hasImg = !empty($sl['gambar']) && file_exists(__DIR__ . '/../assets/uploads/slider/' . $sl['gambar']);
+          $thumbUrl = slider_img_url($sl['gambar'] ?? '', '../');
+          $hasImg   = !empty($thumbUrl);
         ?>
         <tr data-id="<?= $sl['id'] ?>" style="cursor:default;">
           <!-- Drag handle -->
@@ -115,12 +129,13 @@ require __DIR__ . '/includes/admin_header.php';
           <td>
             <?php if ($hasImg): ?>
             <div style="width:100px;height:64px;border-radius:10px;overflow:hidden;border:2px solid #E8ECF4;background:#F8FAFC;cursor:pointer;"
-                 onclick="previewSlide('<?= h('assets/uploads/slider/' . $sl['gambar']) ?>','<?= h(addslashes($sl['judul'] ?? '')) ?>')"
+                 onclick="previewSlide('<?= h($thumbUrl) ?>','<?= h(addslashes($sl['judul'] ?? '')) ?>')"
                  title="Klik untuk preview">
-              <img src="../assets/uploads/slider/<?= h($sl['gambar']) ?>"
+              <img src="<?= h($thumbUrl) ?>"
                    style="width:100%;height:100%;object-fit:cover;transition:transform .3s;"
                    onmouseenter="this.style.transform='scale(1.07)'"
-                   onmouseleave="this.style.transform='scale(1)'">
+                   onmouseleave="this.style.transform='scale(1)'"
+                   loading="lazy">>
             </div>
             <?php else: ?>
             <div style="width:100px;height:64px;border-radius:10px;background:#EEF2FF;border:2px dashed #C7D2FE;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;">

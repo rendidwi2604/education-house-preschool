@@ -41,12 +41,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if ($result['ok']) {
                 // Hapus gambar lama dari Supabase Storage
-                if ($id && $data['gambar']) {
-                    supabase_delete('slider', $data['gambar']);
+                if ($id && $data['gambar'] && str_starts_with($data['gambar'], 'https://')) {
+                    $oldFilename = basename(parse_url($data['gambar'], PHP_URL_PATH));
+                    supabase_delete('slider', $oldFilename);
                 }
-                $gambar = $newName;
+                // Simpan URL lengkap ke database agar bisa ditampilkan dari mana saja
+                $gambar = $result['url'];
             } else {
-                $error = 'Gagal upload: ' . $result['error'];
+                $error = 'Gagal upload gambar: ' . $result['error'];
             }
         }
     }
@@ -156,14 +158,26 @@ require __DIR__ . '/includes/admin_header.php';
 
       <!-- Current / preview image -->
       <div id="imgDisplayWrap" style="margin-bottom:14px;">
-        <?php if (!empty($data['gambar']) && file_exists(__DIR__ . '/../assets/uploads/slider/' . $data['gambar'])): ?>
+        <?php
+          // Resolve URL gambar existing
+          $existingImg = '';
+          if (!empty($data['gambar'])) {
+              if (str_starts_with($data['gambar'], 'https://')) {
+                  $existingImg = $data['gambar']; // Supabase Storage URL
+              } else {
+                  $existingImg = '../assets/uploads/slider/' . $data['gambar']; // file lokal
+              }
+          }
+        ?>
+        <?php if ($existingImg): ?>
         <div style="border-radius:12px;overflow:hidden;border:2px solid #E8ECF4;background:#F8FAFC;">
           <img id="imgPreview"
-               src="../assets/uploads/slider/<?= h($data['gambar']) ?>"
-               style="width:100%;height:auto;display:block;max-height:220px;object-fit:contain;">
+               src="<?= h($existingImg) ?>"
+               style="width:100%;height:auto;display:block;max-height:220px;object-fit:contain;"
+               loading="lazy">
         </div>
         <div id="currentFilename" style="font-size:11.5px;color:#94A3B8;text-align:center;margin-top:6px;font-weight:600;">
-          <?= h($data['gambar']) ?>
+          <?= str_starts_with($data['gambar'], 'https://') ? basename(parse_url($data['gambar'], PHP_URL_PATH)) : h($data['gambar']) ?>
         </div>
         <?php else: ?>
         <div id="imgPlaceholder"

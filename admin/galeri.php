@@ -9,9 +9,7 @@ if (isset($_GET['hapus'])) {
     $item = $pdo->prepare("SELECT gambar FROM galeri WHERE id = ?");
     $item->execute([$id]);
     $row = $item->fetch();
-    if ($row && file_exists(__DIR__ . '/../assets/uploads/galeri/' . $row['gambar'])) {
-        unlink(__DIR__ . '/../assets/uploads/galeri/' . $row['gambar']);
-    }
+    if ($row && !empty($row)) { /* Vercel: tidak bisa hapus file lokal */ }
     $pdo->prepare("DELETE FROM galeri WHERE id = ?")->execute([$id]);
     redirect('/admin/galeri.php?hapus_sukses=1');
     exit;

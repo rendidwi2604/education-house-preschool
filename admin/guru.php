@@ -7,9 +7,7 @@ if (isset($_GET['hapus'])) {
     $item = $pdo->prepare("SELECT foto FROM guru WHERE id = ?");
     $item->execute([$id]);
     $row = $item->fetch();
-    if ($row && $row['foto'] && file_exists(__DIR__ . '/../assets/uploads/guru/' . $row['foto'])) {
-        unlink(__DIR__ . '/../assets/uploads/guru/' . $row['foto']);
-    }
+    if ($row && $row['foto'] && !empty($row)) { /* Vercel: tidak bisa hapus file lokal */ }
     $pdo->prepare("DELETE FROM guru WHERE id = ?")->execute([$id]);
     redirect('/admin/guru.php?hapus_sukses=1');
     exit;
