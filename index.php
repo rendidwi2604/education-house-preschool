@@ -527,7 +527,7 @@ require 'includes/header.php';
             Berikan Si Kecil Awal Terbaik dalam Hidupnya!
           </h3>
           <p class="text-slate-600 text-xs sm:text-sm mt-0.5">
-            Pendaftaran Siswa Baru (PPDB) Tahun Ajaran <strong class="text-kid-orange">2024-2025</strong> Gelombang 1 Telah Resmi Dibuka.
+            Pendaftaran Siswa Baru (PPDB) Tahun Ajaran <strong class="text-kid-orange">2026-2027</strong> Gelombang 1 Telah Resmi Dibuka.
           </p>
         </div>
       </div>

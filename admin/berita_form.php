@@ -72,7 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['hapus_gambar_id'])) 
         }
 
         // Upload gambar-gambar baru (multiple)
-        $uploadErrors = [];
+        $uploadErrors  = [];
         $uploadedCount = 0;
         $files = $_FILES['gambar_baru'] ?? [];
 
@@ -94,28 +94,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['hapus_gambar_id'])) 
 
                 $newName = 'berita_' . time() . '_' . rand(100, 999) . '_' . $i . '.' . $ext;
                 $mime    = mime_from_ext($ext);
-                $result  = supabase_upload($files['tmp_name'][$i], 'berita', $newName, $mime);
 
-                if ($result['ok']) {
-                    // Ambil urutan tertinggi
-                    $maxUrutan = (int) $pdo->prepare("SELECT COALESCE(MAX(urutan),0)+1 FROM berita_gambar WHERE berita_id = ?")
-                                           ->execute([$id]) && false ?: 0;
+                // Coba upload ke Supabase Storage dulu
+                $finalUrl = null;
+                if (getenv('SUPABASE_URL') && getenv('SUPABASE_KEY')) {
+                    $result = supabase_upload($files['tmp_name'][$i], 'berita', $newName, $mime);
+                    if ($result['ok']) {
+                        $finalUrl = $result['url'];
+                    }
+                }
+
+                // Fallback: simpan ke /tmp lalu encode sebagai data URL (tidak persistent)
+                // ATAU simpan path relatif jika filesystem tersedia
+                if ($finalUrl === null) {
+                    // Coba simpan ke assets/uploads/galeri lokal (XAMPP)
+                    $localDir = defined('APP_ROOT') ? APP_ROOT . '/assets/uploads/galeri/' : __DIR__ . '/../assets/uploads/galeri/';
+                    if (is_writable($localDir)) {
+                        if (move_uploaded_file($files['tmp_name'][$i], $localDir . $newName)) {
+                            $finalUrl = 'assets/uploads/galeri/' . $newName;
+                        }
+                    }
+                }
+
+                if ($finalUrl !== null) {
+                    // Ambil urutan tertinggi lalu insert
                     $stmtUrutan = $pdo->prepare("SELECT COALESCE(MAX(urutan),0)+1 FROM berita_gambar WHERE berita_id = ?");
                     $stmtUrutan->execute([$id]);
                     $urutan = (int) $stmtUrutan->fetchColumn();
 
                     $pdo->prepare("INSERT INTO berita_gambar (berita_id, url, urutan) VALUES (?,?,?)")
-                        ->execute([$id, $result['url'], $urutan]);
+                        ->execute([$id, $finalUrl, $urutan]);
                     $uploadedCount++;
                 } else {
-                    $uploadErrors[] = "File #{$i}: " . $result['error'];
+                    $uploadErrors[] = "File #{$i}: gagal upload. Pastikan SUPABASE_URL & SUPABASE_KEY sudah diset di Vercel.";
                 }
             }
         }
 
         if (!empty($uploadErrors)) {
-            $error = 'Berita tersimpan, tapi ada error upload: ' . implode('; ', $uploadErrors);
+            // Berita tetap tersimpan, tapi tampilkan error upload
+            $error = 'Berita tersimpan. Error upload gambar: ' . implode('; ', $uploadErrors);
+        } elseif ($uploadedCount > 0) {
+            redirect('/admin/berita.php?tersimpan=1');
         } else {
+            // Tidak ada file yang dipilih — redirect langsung
             redirect('/admin/berita.php?tersimpan=1');
         }
 
