@@ -15,7 +15,18 @@ if ($berita) {
             "SELECT url FROM berita_gambar WHERE berita_id = ? ORDER BY urutan ASC, id ASC"
         );
         $stmtG->execute([$id]);
-        $gambarList = array_column($stmtG->fetchAll(), 'url');
+        $rawUrls = array_column($stmtG->fetchAll(), 'url');
+
+        // Resolve setiap URL ke URL yang bisa diakses dari browser
+        foreach ($rawUrls as $url) {
+            if (str_starts_with($url, 'https://') || str_starts_with($url, 'http://')) {
+                // URL Supabase Storage — langsung pakai
+                $gambarList[] = $url;
+            } else {
+                // Path lokal — pastikan tidak ada double slash
+                $gambarList[] = ltrim($url, '/');
+            }
+        }
     } catch (PDOException $e) {
         // Fallback ke kolom gambar lama jika tabel belum ada
         if (!empty($berita['gambar'])) {
@@ -120,42 +131,42 @@ require 'includes/header.php';
       <!-- Banyak gambar: main image + grid thumbnail -->
 
       <!-- Main image (lightbox trigger) -->
-      <div style="position:relative;margin-bottom:10px;cursor:pointer;border-radius:20px;overflow:hidden;border:3px solid #E8ECF4;background:#F8FAFC;"
+      <div style="position:relative;margin-bottom:10px;cursor:pointer;border-radius:20px;overflow:hidden;border:3px solid #E8ECF4;background:#F1F5F9;min-height:200px;"
            onclick="openLightbox(0)" id="mainImgWrap">
         <?php $g0 = $gambarList[0]; $g0webp = preg_replace('/\.(png|jpg|jpeg)$/i', '.webp', $g0); ?>
-        <picture>
-          <source srcset="<?= h($g0webp) ?>" type="image/webp">
-          <img src="<?= h($g0) ?>"
-               alt="<?= h($berita['judul']) ?> — foto 1"
-               fetchpriority="high"
-               id="mainImg"
-               style="width:100%;max-height:440px;object-fit:cover;display:block;transition:transform .3s;"
-               onmouseover="this.style.transform='scale(1.02)'"
-               onmouseout="this.style.transform='scale(1)'">
-        </picture>
-        <!-- overlay hint -->
-        <div style="position:absolute;bottom:12px;right:12px;background:rgba(0,0,0,.55);color:#fff;font-size:11px;font-weight:800;padding:4px 10px;border-radius:8px;display:flex;align-items:center;gap:5px;">
-          <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M15.75 4.5a3 3 0 11.825 2.066 1.125 1.125 0 010-.132A3 3 0 0115.75 4.5zm0 13.5a3 3 0 11-.001-5.998A3 3 0 0115.75 18zm-11.25-9a3 3 0 11-.001-5.998A3 3 0 014.5 9zm0 9a3 3 0 11-.001-5.999A3 3 0 014.5 18z" clip-rule="evenodd"/></svg>
-          1 / <?= count($gambarList) ?>
+        <img src="<?= h($g0) ?>"
+             alt="<?= h($berita['judul']) ?> — foto 1"
+             fetchpriority="high"
+             id="mainImg"
+             style="width:100%;max-height:480px;min-height:180px;object-fit:cover;display:block;transition:transform .3s;"
+             onmouseover="this.style.transform='scale(1.02)'"
+             onmouseout="this.style.transform='scale(1)'"
+             onerror="this.style.display='none';this.parentElement.querySelector('.img-error').style.display='flex'">
+        <!-- Fallback jika gambar broken -->
+        <div class="img-error" style="display:none;width:100%;height:200px;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:#94A3B8;">
+          <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/></svg>
+          <span style="font-size:13px;font-weight:600;">Gambar tidak tersedia</span>
+        </div>
+        <!-- overlay counter -->
+        <div style="position:absolute;bottom:12px;right:12px;background:rgba(0,0,0,.6);color:#fff;font-size:12px;font-weight:800;padding:5px 12px;border-radius:8px;display:flex;align-items:center;gap:5px;">
+          <svg width="13" height="13" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M1.5 6a2.25 2.25 0 012.25-2.25h16.5A2.25 2.25 0 0122.5 6v12a2.25 2.25 0 01-2.25 2.25H3.75A2.25 2.25 0 011.5 18V6zM3 16.06V18c0 .414.336.75.75.75h16.5A.75.75 0 0021 18v-1.94l-2.69-2.689a1.5 1.5 0 00-2.12 0l-.88.879.97.97a.75.75 0 11-1.06 1.06l-5.16-5.159a1.5 1.5 0 00-2.12 0L3 16.061zm10.125-7.81a1.125 1.125 0 112.25 0 1.125 1.125 0 01-2.25 0z" clip-rule="evenodd"/></svg>
+          <span id="mainCounter">1 / <?= count($gambarList) ?></span>
         </div>
       </div>
 
       <!-- Thumbnail strip -->
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px;">
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;margin-top:8px;">
         <?php foreach ($gambarList as $gi => $gUrl): ?>
-        <?php $gWebp = preg_replace('/\.(png|jpg|jpeg)$/i', '.webp', $gUrl); ?>
         <div onclick="switchMain(<?= $gi ?>)"
              id="thumb-<?= $gi ?>"
-             style="border-radius:10px;overflow:hidden;cursor:pointer;aspect-ratio:1;border:2.5px solid <?= $gi===0 ? '#328C39' : '#E8ECF4' ?>;transition:border-color .2s,transform .2s;background:#F8FAFC;"
+             style="border-radius:12px;overflow:hidden;cursor:pointer;aspect-ratio:1;border:3px solid <?= $gi===0 ? '#328C39' : '#E8ECF4' ?>;transition:border-color .2s,transform .15s;background:#F8FAFC;"
              onmouseover="this.style.transform='scale(1.05)'"
              onmouseout="this.style.transform='scale(1)'">
-          <picture>
-            <source srcset="<?= h($gWebp) ?>" type="image/webp">
-            <img src="<?= h($gUrl) ?>"
-                 alt="Foto <?= $gi+1 ?>"
-                 style="width:100%;height:100%;object-fit:cover;"
-                 loading="lazy">
-          </picture>
+          <img src="<?= h($gUrl) ?>"
+               alt="Foto <?= $gi+1 ?>"
+               style="width:100%;height:100%;object-fit:cover;"
+               loading="lazy"
+               onerror="this.parentElement.style.background='#EEF2FF'">
         </div>
         <?php endforeach; ?>
       </div>
@@ -254,14 +265,14 @@ require 'includes/header.php';
   var currentMainIdx = 0;
   function switchMain(idx) {
     var mainImg  = document.getElementById('mainImg');
+    var counter  = document.getElementById('mainCounter');
     var oldThumb = document.getElementById('thumb-' + currentMainIdx);
     var newThumb = document.getElementById('thumb-' + idx);
-    var counter  = document.querySelector('#mainImgWrap div');
 
-    if (mainImg)  mainImg.src = lbImages[idx];
-    if (oldThumb) oldThumb.style.borderColor = '#E8ECF4';
-    if (newThumb) newThumb.style.borderColor = '#328C39';
-    if (counter)  counter.childNodes[counter.childNodes.length-1].textContent = ' ' + (idx+1) + ' / ' + lbImages.length;
+    if (mainImg)  { mainImg.src = lbImages[idx]; }
+    if (counter)  { counter.textContent = (idx+1) + ' / ' + lbImages.length; }
+    if (oldThumb) { oldThumb.style.borderColor = '#E8ECF4'; }
+    if (newThumb) { newThumb.style.borderColor = '#328C39'; }
 
     currentMainIdx = idx;
   }

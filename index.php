@@ -22,7 +22,12 @@ try {
         );
         $stmtBG->execute($beritaIds);
         foreach ($stmtBG->fetchAll() as $bg) {
-            $beritaGambarMap[$bg['berita_id']][] = $bg['url'];
+            // Normalize URL — pastikan path lokal tidak ada double slash
+            $url = $bg['url'];
+            if (!str_starts_with($url, 'https://') && !str_starts_with($url, 'http://')) {
+                $url = ltrim($url, '/');
+            }
+            $beritaGambarMap[$bg['berita_id']][] = $url;
         }
     }
 } catch (PDOException $e) {
