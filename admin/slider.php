@@ -1,5 +1,5 @@
 ﻿<?php
-require 'includes/auth.php';
+require __DIR__ . '/includes/auth.php';
 $page_title = 'Slider Hero';
 
 // ── Hapus slide ──────────────────────────────────────────
@@ -14,7 +14,7 @@ if (isset($_GET['hapus'])) {
     $pdo->prepare("DELETE FROM slider WHERE id = ?")->execute([$id]);
     
         $inner = <?php
-require 'includes/auth.php';
+require __DIR__ . '/includes/auth.php';
 $page_title = 'Slider Hero';
 
 // ── Hapus slide ──────────────────────────────────────────
@@ -50,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reorder'])) {
 }
 
 $daftar = $pdo->query("SELECT * FROM slider ORDER BY urutan ASC, id ASC")->fetchAll();
-require 'includes/admin_header.php';
+require __DIR__ . '/includes/admin_header.php';
 ?>
 
 <?php if (isset($_GET['tersimpan'])): ?>
@@ -310,7 +310,7 @@ function saveOrder() {
 }
 </script>
 
-<?php require 'includes/admin_footer.php'; ?>
+<?php require __DIR__ . '/includes/admin_footer.php'; ?>
 .Groups[1].Value
         # Jika path sudah mulai dengan / biarkan, kalau tidak tambah /admin/
         if ($inner -match '^/') {
@@ -328,7 +328,7 @@ if (isset($_GET['toggle'])) {
     $pdo->prepare("UPDATE slider SET aktif = 1 - aktif WHERE id = ?")->execute([$id]);
     
         $inner = <?php
-require 'includes/auth.php';
+require __DIR__ . '/includes/auth.php';
 $page_title = 'Slider Hero';
 
 // ── Hapus slide ──────────────────────────────────────────
@@ -364,7 +364,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reorder'])) {
 }
 
 $daftar = $pdo->query("SELECT * FROM slider ORDER BY urutan ASC, id ASC")->fetchAll();
-require 'includes/admin_header.php';
+require __DIR__ . '/includes/admin_header.php';
 ?>
 
 <?php if (isset($_GET['tersimpan'])): ?>
@@ -624,7 +624,7 @@ function saveOrder() {
 }
 </script>
 
-<?php require 'includes/admin_footer.php'; ?>
+<?php require __DIR__ . '/includes/admin_footer.php'; ?>
 .Groups[1].Value
         # Jika path sudah mulai dengan / biarkan, kalau tidak tambah /admin/
         if ($inner -match '^/') {
@@ -647,7 +647,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reorder'])) {
 }
 
 $daftar = $pdo->query("SELECT * FROM slider ORDER BY urutan ASC, id ASC")->fetchAll();
-require 'includes/admin_header.php';
+require __DIR__ . '/includes/admin_header.php';
 ?>
 
 <?php if (isset($_GET['tersimpan'])): ?>
@@ -907,4 +907,4 @@ function saveOrder() {
 }
 </script>
 
-<?php require 'includes/admin_footer.php'; ?>
+<?php require __DIR__ . '/includes/admin_footer.php'; ?>

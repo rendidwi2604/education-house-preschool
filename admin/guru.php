@@ -1,5 +1,5 @@
 ﻿<?php
-require 'includes/auth.php';
+require __DIR__ . '/includes/auth.php';
 $page_title = 'Guru & Staf';
 
 if (isset($_GET['hapus'])) {
@@ -13,7 +13,7 @@ if (isset($_GET['hapus'])) {
     $pdo->prepare("DELETE FROM guru WHERE id = ?")->execute([$id]);
     
         $inner = <?php
-require 'includes/auth.php';
+require __DIR__ . '/includes/auth.php';
 $page_title = 'Guru & Staf';
 
 if (isset($_GET['hapus'])) {
@@ -30,7 +30,7 @@ if (isset($_GET['hapus'])) {
 }
 
 $daftar = $pdo->query("SELECT * FROM guru ORDER BY created_at ASC")->fetchAll();
-require 'includes/admin_header.php';
+require __DIR__ . '/includes/admin_header.php';
 ?>
 
 <?php if (isset($_GET['tersimpan'])): ?>
@@ -112,7 +112,7 @@ require 'includes/admin_header.php';
   <?php endif; ?>
 </div>
 
-<?php require 'includes/admin_footer.php'; ?>
+<?php require __DIR__ . '/includes/admin_footer.php'; ?>
 .Groups[1].Value
         # Jika path sudah mulai dengan / biarkan, kalau tidak tambah /admin/
         if ($inner -match '^/') {
@@ -125,7 +125,7 @@ require 'includes/admin_header.php';
 }
 
 $daftar = $pdo->query("SELECT * FROM guru ORDER BY created_at ASC")->fetchAll();
-require 'includes/admin_header.php';
+require __DIR__ . '/includes/admin_header.php';
 ?>
 
 <?php if (isset($_GET['tersimpan'])): ?>
@@ -207,4 +207,4 @@ require 'includes/admin_header.php';
   <?php endif; ?>
 </div>
 
-<?php require 'includes/admin_footer.php'; ?>
+<?php require __DIR__ . '/includes/admin_footer.php'; ?>

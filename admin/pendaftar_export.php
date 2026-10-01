@@ -1,5 +1,5 @@
-<?php
-require 'includes/auth.php';
+﻿<?php
+require __DIR__ . '/includes/auth.php';
 
 $daftar = $pdo->query("SELECT * FROM pendaftar ORDER BY created_at DESC")->fetchAll();
 

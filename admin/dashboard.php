@@ -1,5 +1,5 @@
-<?php
-require 'includes/auth.php';
+﻿<?php
+require __DIR__ . '/includes/auth.php';
 $page_title = 'Dashboard';
 
 $jml_pendaftar = $pdo->query("SELECT COUNT(*) FROM pendaftar")->fetchColumn();
@@ -10,7 +10,7 @@ $jml_guru      = $pdo->query("SELECT COUNT(*) FROM guru")->fetchColumn();
 $pendaftar_terbaru = $pdo->query("SELECT * FROM pendaftar ORDER BY created_at DESC LIMIT 5")->fetchAll();
 $berita_terbaru    = $pdo->query("SELECT * FROM berita ORDER BY created_at DESC LIMIT 5")->fetchAll();
 
-require 'includes/admin_header.php';
+require __DIR__ . '/includes/admin_header.php';
 ?>
 
 <!-- Dashboard Hero -->
@@ -174,4 +174,4 @@ require 'includes/admin_header.php';
 
 </div>
 
-<?php require 'includes/admin_footer.php'; ?>
+<?php require __DIR__ . '/includes/admin_footer.php'; ?>

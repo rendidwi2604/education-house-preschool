@@ -1,5 +1,5 @@
 ﻿<?php
-require 'includes/auth.php';
+require __DIR__ . '/includes/auth.php';
 
 $id = isset($_GET['id']) ? (int) $_GET['id'] : null;
 $data = ['judul' => '', 'isi' => '', 'kategori' => 'Pengumuman', 'status' => 'terbit', 'gambar' => null];
@@ -47,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             
         $inner = <?php
-require 'includes/auth.php';
+require __DIR__ . '/includes/auth.php';
 
 $id = isset($_GET['id']) ? (int) $_GET['id'] : null;
 $data = ['judul' => '', 'isi' => '', 'kategori' => 'Pengumuman', 'status' => 'terbit', 'gambar' => null];
@@ -100,7 +100,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $data = ['judul'=>$judul,'isi'=>$isi,'kategori'=>$kategori,'status'=>$status,'gambar'=>$gambar];
 }
 
-require 'includes/admin_header.php';
+require __DIR__ . '/includes/admin_header.php';
 ?>
 
 <?php if ($error): ?>
@@ -221,7 +221,7 @@ function previewImg(input) {
 }
 </script>
 
-<?php require 'includes/admin_footer.php'; ?>
+<?php require __DIR__ . '/includes/admin_footer.php'; ?>
 .Groups[1].Value
         # Jika path sudah mulai dengan / biarkan, kalau tidak tambah /admin/
         if ($inner -match '^/') {
@@ -236,7 +236,7 @@ function previewImg(input) {
     $data = ['judul'=>$judul,'isi'=>$isi,'kategori'=>$kategori,'status'=>$status,'gambar'=>$gambar];
 }
 
-require 'includes/admin_header.php';
+require __DIR__ . '/includes/admin_header.php';
 ?>
 
 <?php if ($error): ?>
@@ -357,4 +357,4 @@ function previewImg(input) {
 }
 </script>
 
-<?php require 'includes/admin_footer.php'; ?>
+<?php require __DIR__ . '/includes/admin_footer.php'; ?>

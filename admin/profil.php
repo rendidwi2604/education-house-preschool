@@ -1,5 +1,5 @@
 ﻿<?php
-require 'includes/auth.php';
+require __DIR__ . '/includes/auth.php';
 
 $stmt = $pdo->prepare('SELECT id, username, nama, foto, created_at FROM admin WHERE id = ?');
 $stmt->execute([$_SESSION['admin_id']]);
@@ -7,7 +7,7 @@ $admin = $stmt->fetch();
 
 if (!$admin) { session_destroy(); 
         $inner = <?php
-require 'includes/auth.php';
+require __DIR__ . '/includes/auth.php';
 
 $stmt = $pdo->prepare('SELECT id, username, nama, foto, created_at FROM admin WHERE id = ?');
 $stmt->execute([$_SESSION['admin_id']]);
@@ -60,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-require 'includes/admin_header.php';
+require __DIR__ . '/includes/admin_header.php';
 ?>
 
 <?php if ($error): ?>
@@ -174,7 +174,7 @@ function previewProfile(input){
 }
 </script>
 
-<?php require 'includes/admin_footer.php'; ?>
+<?php require __DIR__ . '/includes/admin_footer.php'; ?>
 .Groups[1].Value
         # Jika path sudah mulai dengan / biarkan, kalau tidak tambah /admin/
         if ($inner -match '^/') {
@@ -229,7 +229,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-require 'includes/admin_header.php';
+require __DIR__ . '/includes/admin_header.php';
 ?>
 
 <?php if ($error): ?>
@@ -343,4 +343,4 @@ function previewProfile(input){
 }
 </script>
 
-<?php require 'includes/admin_footer.php'; ?>
+<?php require __DIR__ . '/includes/admin_footer.php'; ?>

@@ -1,5 +1,5 @@
 ﻿<?php
-require 'includes/auth.php';
+require __DIR__ . '/includes/auth.php';
 $page_title = 'Galeri & Instagram';
 $error = '';
 $success = '';
@@ -15,7 +15,7 @@ if (isset($_GET['hapus'])) {
     $pdo->prepare("DELETE FROM galeri WHERE id = ?")->execute([$id]);
     
         $inner = <?php
-require 'includes/auth.php';
+require __DIR__ . '/includes/auth.php';
 $page_title = 'Galeri & Instagram';
 $error = '';
 $success = '';
@@ -209,7 +209,7 @@ $daftar = $pdo->query("SELECT * FROM galeri ORDER BY created_at DESC")->fetchAll
   $kegiatanIslami = $pdo->query('SELECT * FROM kegiatan_islami ORDER BY created_at DESC')->fetchAll();
   $testimoniOrangtua = $pdo->query('SELECT * FROM testimoni_orangtua ORDER BY created_at DESC')->fetchAll();
 $instagramPosts = $pdo->query('SELECT id, post_url, created_at FROM instagram_posts ORDER BY created_at DESC, id DESC')->fetchAll();
-require 'includes/admin_header.php';
+require __DIR__ . '/includes/admin_header.php';
 ?>
 
 <?php if (isset($_GET['tersimpan'])): ?>
@@ -426,7 +426,7 @@ function previewFoto(input){
 }
 </script>
 
-<?php require 'includes/admin_footer.php'; ?>
+<?php require __DIR__ . '/includes/admin_footer.php'; ?>
 .Groups[1].Value
         # Jika path sudah mulai dengan / biarkan, kalau tidak tambah /admin/
         if ($inner -match '^/') {
@@ -442,7 +442,7 @@ function previewFoto(input){
     $pdo->prepare('DELETE FROM instagram_posts WHERE id = ?')->execute([(int) $_POST['hapus_instagram_id']]);
     
         $inner = <?php
-require 'includes/auth.php';
+require __DIR__ . '/includes/auth.php';
 $page_title = 'Galeri & Instagram';
 $error = '';
 $success = '';
@@ -636,7 +636,7 @@ $daftar = $pdo->query("SELECT * FROM galeri ORDER BY created_at DESC")->fetchAll
   $kegiatanIslami = $pdo->query('SELECT * FROM kegiatan_islami ORDER BY created_at DESC')->fetchAll();
   $testimoniOrangtua = $pdo->query('SELECT * FROM testimoni_orangtua ORDER BY created_at DESC')->fetchAll();
 $instagramPosts = $pdo->query('SELECT id, post_url, created_at FROM instagram_posts ORDER BY created_at DESC, id DESC')->fetchAll();
-require 'includes/admin_header.php';
+require __DIR__ . '/includes/admin_header.php';
 ?>
 
 <?php if (isset($_GET['tersimpan'])): ?>
@@ -853,7 +853,7 @@ function previewFoto(input){
 }
 </script>
 
-<?php require 'includes/admin_footer.php'; ?>
+<?php require __DIR__ . '/includes/admin_footer.php'; ?>
 .Groups[1].Value
         # Jika path sudah mulai dengan / biarkan, kalau tidak tambah /admin/
         if ($inner -match '^/') {
@@ -876,7 +876,7 @@ function previewFoto(input){
       if ($stmt->rowCount() > 0) {
         
         $inner = <?php
-require 'includes/auth.php';
+require __DIR__ . '/includes/auth.php';
 $page_title = 'Galeri & Instagram';
 $error = '';
 $success = '';
@@ -1070,7 +1070,7 @@ $daftar = $pdo->query("SELECT * FROM galeri ORDER BY created_at DESC")->fetchAll
   $kegiatanIslami = $pdo->query('SELECT * FROM kegiatan_islami ORDER BY created_at DESC')->fetchAll();
   $testimoniOrangtua = $pdo->query('SELECT * FROM testimoni_orangtua ORDER BY created_at DESC')->fetchAll();
 $instagramPosts = $pdo->query('SELECT id, post_url, created_at FROM instagram_posts ORDER BY created_at DESC, id DESC')->fetchAll();
-require 'includes/admin_header.php';
+require __DIR__ . '/includes/admin_header.php';
 ?>
 
 <?php if (isset($_GET['tersimpan'])): ?>
@@ -1287,7 +1287,7 @@ function previewFoto(input){
 }
 </script>
 
-<?php require 'includes/admin_footer.php'; ?>
+<?php require __DIR__ . '/includes/admin_footer.php'; ?>
 .Groups[1].Value
         # Jika path sudah mulai dengan / biarkan, kalau tidak tambah /admin/
         if ($inner -match '^/') {
@@ -1316,7 +1316,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_FILES['foto']['name'])) {
         $pdo->prepare("INSERT INTO galeri (keterangan, gambar) VALUES (?, ?)")->execute([$keterangan, $namaBaru]);
         
         $inner = <?php
-require 'includes/auth.php';
+require __DIR__ . '/includes/auth.php';
 $page_title = 'Galeri & Instagram';
 $error = '';
 $success = '';
@@ -1510,7 +1510,7 @@ $daftar = $pdo->query("SELECT * FROM galeri ORDER BY created_at DESC")->fetchAll
   $kegiatanIslami = $pdo->query('SELECT * FROM kegiatan_islami ORDER BY created_at DESC')->fetchAll();
   $testimoniOrangtua = $pdo->query('SELECT * FROM testimoni_orangtua ORDER BY created_at DESC')->fetchAll();
 $instagramPosts = $pdo->query('SELECT id, post_url, created_at FROM instagram_posts ORDER BY created_at DESC, id DESC')->fetchAll();
-require 'includes/admin_header.php';
+require __DIR__ . '/includes/admin_header.php';
 ?>
 
 <?php if (isset($_GET['tersimpan'])): ?>
@@ -1727,7 +1727,7 @@ function previewFoto(input){
 }
 </script>
 
-<?php require 'includes/admin_footer.php'; ?>
+<?php require __DIR__ . '/includes/admin_footer.php'; ?>
 .Groups[1].Value
         # Jika path sudah mulai dengan / biarkan, kalau tidak tambah /admin/
         if ($inner -match '^/') {
@@ -1778,7 +1778,7 @@ function previewFoto(input){
         $pdo->prepare('INSERT INTO kegiatan_islami (judul, keterangan, gambar, instagram_url) VALUES (?, ?, ?, ?)')->execute([$judul, $keterangan ?: null, $gambar, $instagramUrl]);
         
         $inner = <?php
-require 'includes/auth.php';
+require __DIR__ . '/includes/auth.php';
 $page_title = 'Galeri & Instagram';
 $error = '';
 $success = '';
@@ -1972,7 +1972,7 @@ $daftar = $pdo->query("SELECT * FROM galeri ORDER BY created_at DESC")->fetchAll
   $kegiatanIslami = $pdo->query('SELECT * FROM kegiatan_islami ORDER BY created_at DESC')->fetchAll();
   $testimoniOrangtua = $pdo->query('SELECT * FROM testimoni_orangtua ORDER BY created_at DESC')->fetchAll();
 $instagramPosts = $pdo->query('SELECT id, post_url, created_at FROM instagram_posts ORDER BY created_at DESC, id DESC')->fetchAll();
-require 'includes/admin_header.php';
+require __DIR__ . '/includes/admin_header.php';
 ?>
 
 <?php if (isset($_GET['tersimpan'])): ?>
@@ -2189,7 +2189,7 @@ function previewFoto(input){
 }
 </script>
 
-<?php require 'includes/admin_footer.php'; ?>
+<?php require __DIR__ . '/includes/admin_footer.php'; ?>
 .Groups[1].Value
         # Jika path sudah mulai dengan / biarkan, kalau tidak tambah /admin/
         if ($inner -match '^/') {
@@ -2255,7 +2255,7 @@ function previewFoto(input){
         $pdo->prepare('INSERT INTO testimoni_orangtua (keterangan, video, instagram_url, tiktok_url) VALUES (?, ?, ?, ?)')->execute([$keterangan ?: null, $video, $instagramUrl, $savedTiktokUrl]);
         
         $inner = <?php
-require 'includes/auth.php';
+require __DIR__ . '/includes/auth.php';
 $page_title = 'Galeri & Instagram';
 $error = '';
 $success = '';
@@ -2449,7 +2449,7 @@ $daftar = $pdo->query("SELECT * FROM galeri ORDER BY created_at DESC")->fetchAll
   $kegiatanIslami = $pdo->query('SELECT * FROM kegiatan_islami ORDER BY created_at DESC')->fetchAll();
   $testimoniOrangtua = $pdo->query('SELECT * FROM testimoni_orangtua ORDER BY created_at DESC')->fetchAll();
 $instagramPosts = $pdo->query('SELECT id, post_url, created_at FROM instagram_posts ORDER BY created_at DESC, id DESC')->fetchAll();
-require 'includes/admin_header.php';
+require __DIR__ . '/includes/admin_header.php';
 ?>
 
 <?php if (isset($_GET['tersimpan'])): ?>
@@ -2666,7 +2666,7 @@ function previewFoto(input){
 }
 </script>
 
-<?php require 'includes/admin_footer.php'; ?>
+<?php require __DIR__ . '/includes/admin_footer.php'; ?>
 .Groups[1].Value
         # Jika path sudah mulai dengan / biarkan, kalau tidak tambah /admin/
         if ($inner -match '^/') {
@@ -2692,7 +2692,7 @@ function previewFoto(input){
     }
     
         $inner = <?php
-require 'includes/auth.php';
+require __DIR__ . '/includes/auth.php';
 $page_title = 'Galeri & Instagram';
 $error = '';
 $success = '';
@@ -2886,7 +2886,7 @@ $daftar = $pdo->query("SELECT * FROM galeri ORDER BY created_at DESC")->fetchAll
   $kegiatanIslami = $pdo->query('SELECT * FROM kegiatan_islami ORDER BY created_at DESC')->fetchAll();
   $testimoniOrangtua = $pdo->query('SELECT * FROM testimoni_orangtua ORDER BY created_at DESC')->fetchAll();
 $instagramPosts = $pdo->query('SELECT id, post_url, created_at FROM instagram_posts ORDER BY created_at DESC, id DESC')->fetchAll();
-require 'includes/admin_header.php';
+require __DIR__ . '/includes/admin_header.php';
 ?>
 
 <?php if (isset($_GET['tersimpan'])): ?>
@@ -3103,7 +3103,7 @@ function previewFoto(input){
 }
 </script>
 
-<?php require 'includes/admin_footer.php'; ?>
+<?php require __DIR__ . '/includes/admin_footer.php'; ?>
 .Groups[1].Value
         # Jika path sudah mulai dengan / biarkan, kalau tidak tambah /admin/
         if ($inner -match '^/') {
@@ -3134,7 +3134,7 @@ function previewFoto(input){
     }
     
         $inner = <?php
-require 'includes/auth.php';
+require __DIR__ . '/includes/auth.php';
 $page_title = 'Galeri & Instagram';
 $error = '';
 $success = '';
@@ -3328,7 +3328,7 @@ $daftar = $pdo->query("SELECT * FROM galeri ORDER BY created_at DESC")->fetchAll
   $kegiatanIslami = $pdo->query('SELECT * FROM kegiatan_islami ORDER BY created_at DESC')->fetchAll();
   $testimoniOrangtua = $pdo->query('SELECT * FROM testimoni_orangtua ORDER BY created_at DESC')->fetchAll();
 $instagramPosts = $pdo->query('SELECT id, post_url, created_at FROM instagram_posts ORDER BY created_at DESC, id DESC')->fetchAll();
-require 'includes/admin_header.php';
+require __DIR__ . '/includes/admin_header.php';
 ?>
 
 <?php if (isset($_GET['tersimpan'])): ?>
@@ -3545,7 +3545,7 @@ function previewFoto(input){
 }
 </script>
 
-<?php require 'includes/admin_footer.php'; ?>
+<?php require __DIR__ . '/includes/admin_footer.php'; ?>
 .Groups[1].Value
         # Jika path sudah mulai dengan / biarkan, kalau tidak tambah /admin/
         if ($inner -match '^/') {
@@ -3561,7 +3561,7 @@ $daftar = $pdo->query("SELECT * FROM galeri ORDER BY created_at DESC")->fetchAll
   $kegiatanIslami = $pdo->query('SELECT * FROM kegiatan_islami ORDER BY created_at DESC')->fetchAll();
   $testimoniOrangtua = $pdo->query('SELECT * FROM testimoni_orangtua ORDER BY created_at DESC')->fetchAll();
 $instagramPosts = $pdo->query('SELECT id, post_url, created_at FROM instagram_posts ORDER BY created_at DESC, id DESC')->fetchAll();
-require 'includes/admin_header.php';
+require __DIR__ . '/includes/admin_header.php';
 ?>
 
 <?php if (isset($_GET['tersimpan'])): ?>
@@ -3778,4 +3778,4 @@ function previewFoto(input){
 }
 </script>
 
-<?php require 'includes/admin_footer.php'; ?>
+<?php require __DIR__ . '/includes/admin_footer.php'; ?>

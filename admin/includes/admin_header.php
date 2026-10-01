@@ -11,7 +11,7 @@
 </head>
 <body>
 <div class="admin-shell">
-  <?php require 'includes/sidebar.php'; ?>
+  <?php require __DIR__ . '/sidebar.php'; ?>
 
   <!-- Mobile backdrop -->
   <div id="mob-backdrop" onclick="closeSidebar()"

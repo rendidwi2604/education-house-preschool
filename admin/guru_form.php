@@ -1,5 +1,5 @@
 ﻿<?php
-require 'includes/auth.php';
+require __DIR__ . '/includes/auth.php';
 
 $id = isset($_GET['id']) ? (int) $_GET['id'] : null;
 $data = ['nama'=>'','jabatan'=>'','bidang'=>'','pendidikan'=>'','pengalaman'=>'','bio'=>'','foto'=>null];
@@ -60,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             
         $inner = <?php
-require 'includes/auth.php';
+require __DIR__ . '/includes/auth.php';
 
 $id = isset($_GET['id']) ? (int) $_GET['id'] : null;
 $data = ['nama'=>'','jabatan'=>'','bidang'=>'','pendidikan'=>'','pengalaman'=>'','bio'=>'','foto'=>null];
@@ -126,7 +126,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $data = compact('nama','jabatan','bidang','pendidikan','pengalaman','bio','foto');
 }
 
-require 'includes/admin_header.php';
+require __DIR__ . '/includes/admin_header.php';
 ?>
 
 <?php if ($error): ?>
@@ -244,7 +244,7 @@ function previewFoto(input){
 }
 </script>
 
-<?php require 'includes/admin_footer.php'; ?>
+<?php require __DIR__ . '/includes/admin_footer.php'; ?>
 .Groups[1].Value
         # Jika path sudah mulai dengan / biarkan, kalau tidak tambah /admin/
         if ($inner -match '^/') {
@@ -259,7 +259,7 @@ function previewFoto(input){
     $data = compact('nama','jabatan','bidang','pendidikan','pengalaman','bio','foto');
 }
 
-require 'includes/admin_header.php';
+require __DIR__ . '/includes/admin_header.php';
 ?>
 
 <?php if ($error): ?>
@@ -377,4 +377,4 @@ function previewFoto(input){
 }
 </script>
 
-<?php require 'includes/admin_footer.php'; ?>
+<?php require __DIR__ . '/includes/admin_footer.php'; ?>

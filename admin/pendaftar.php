@@ -1,5 +1,5 @@
 ﻿<?php
-require 'includes/auth.php';
+require __DIR__ . '/includes/auth.php';
 $page_title = 'Data Pendaftar';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'], $_POST['status'])) {
@@ -9,7 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'], $_POST['status'
     }
     
         $inner = <?php
-require 'includes/auth.php';
+require __DIR__ . '/includes/auth.php';
 $page_title = 'Data Pendaftar';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'], $_POST['status'])) {
@@ -32,7 +32,7 @@ $jml_baru     = count(array_filter($daftar, fn($p) => $p['status'] === 'Baru'));
 $jml_diterima = count(array_filter($daftar, fn($p) => $p['status'] === 'Diterima'));
 $jml_ditolak  = count(array_filter($daftar, fn($p) => $p['status'] === 'Ditolak'));
 
-require 'includes/admin_header.php';
+require __DIR__ . '/includes/admin_header.php';
 ?>
 
 <?php if (isset($_GET['update'])): ?>
@@ -160,7 +160,7 @@ require 'includes/admin_header.php';
   <?php endif; ?>
 </div>
 
-<?php require 'includes/admin_footer.php'; ?>
+<?php require __DIR__ . '/includes/admin_footer.php'; ?>
 .Groups[1].Value
         # Jika path sudah mulai dengan / biarkan, kalau tidak tambah /admin/
         if ($inner -match '^/') {
@@ -176,7 +176,7 @@ if (isset($_GET['hapus'])) {
     $pdo->prepare("DELETE FROM pendaftar WHERE id = ?")->execute([(int) $_GET['hapus']]);
     
         $inner = <?php
-require 'includes/auth.php';
+require __DIR__ . '/includes/auth.php';
 $page_title = 'Data Pendaftar';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'], $_POST['status'])) {
@@ -199,7 +199,7 @@ $jml_baru     = count(array_filter($daftar, fn($p) => $p['status'] === 'Baru'));
 $jml_diterima = count(array_filter($daftar, fn($p) => $p['status'] === 'Diterima'));
 $jml_ditolak  = count(array_filter($daftar, fn($p) => $p['status'] === 'Ditolak'));
 
-require 'includes/admin_header.php';
+require __DIR__ . '/includes/admin_header.php';
 ?>
 
 <?php if (isset($_GET['update'])): ?>
@@ -327,7 +327,7 @@ require 'includes/admin_header.php';
   <?php endif; ?>
 </div>
 
-<?php require 'includes/admin_footer.php'; ?>
+<?php require __DIR__ . '/includes/admin_footer.php'; ?>
 .Groups[1].Value
         # Jika path sudah mulai dengan / biarkan, kalau tidak tambah /admin/
         if ($inner -match '^/') {
@@ -344,7 +344,7 @@ $jml_baru     = count(array_filter($daftar, fn($p) => $p['status'] === 'Baru'));
 $jml_diterima = count(array_filter($daftar, fn($p) => $p['status'] === 'Diterima'));
 $jml_ditolak  = count(array_filter($daftar, fn($p) => $p['status'] === 'Ditolak'));
 
-require 'includes/admin_header.php';
+require __DIR__ . '/includes/admin_header.php';
 ?>
 
 <?php if (isset($_GET['update'])): ?>
@@ -472,4 +472,4 @@ require 'includes/admin_header.php';
   <?php endif; ?>
 </div>
 
-<?php require 'includes/admin_footer.php'; ?>
+<?php require __DIR__ . '/includes/admin_footer.php'; ?>
