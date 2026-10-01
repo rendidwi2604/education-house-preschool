@@ -1,0 +1,27 @@
+# Konfigurasi database — JANGAN di-commit
+config/db.php
+
+# Upload dari user
+assets/uploads/galeri/*
+assets/uploads/guru/*
+assets/uploads/slider/*
+assets/uploads/admin/*
+assets/uploads/testimoni/*
+
+# Kecualikan .gitkeep
+!assets/uploads/galeri/.gitkeep
+!assets/uploads/guru/.gitkeep
+!assets/uploads/slider/.gitkeep
+
+# Tailwind build tools (tidak perlu di repo, hanya tailwind.css yang dibutuhkan)
+assets/css/tailwind.src.css
+tailwind.config.js
+node_modules/
+package.json
+package-lock.json
+
+# OS & editor
+.DS_Store
+Thumbs.db
+.vscode/settings.json
+*.log

@@ -10,6 +10,13 @@ tk_pelangi_ceria.sql
 README.md
 DEPLOYMENT_GUIDE.md
 
+# Build tools (tailwind.css sudah di-commit, tools tidak perlu)
+node_modules/
+package.json
+package-lock.json
+tailwind.config.js
+assets/css/tailwind.src.css
+
 # Development tools
 .vscode/
 .gitignore

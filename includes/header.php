@@ -93,46 +93,8 @@ $_og_image   = $_canonical_base . '/assets/img/Logo_EduHouse.webp';
 <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"></noscript>
 
-<!-- ── Tailwind: load async (non-render-blocking) ──────── -->
-<script>
-// Tailwind config harus didefinisikan SEBELUM script Tailwind dimuat
-window.tailwind = window.tailwind || {};
-window.tailwindConfig = {
-  theme: {
-    extend: {
-      fontFamily: {
-        heading: ['Quicksand', 'sans-serif'],
-        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
-      },
-      colors: {
-        kid: {
-          purple: '#58A834',
-          'purple-dark': '#468926',
-          amber: '#F59E0B',
-          orange: '#F97316',
-          'orange-dark': '#EA580C',
-          green: '#69BD45',
-          'green-dark': '#4A9A32',
-          teal: '#06B6D4',
-          blue: '#2B8FE8',
-          'blue-dark': '#1C74C5',
-          pink: '#EC4899',
-          yellow: '#FBBF24',
-          cream: '#FEF9EE'
-        }
-      },
-      borderRadius: { '4xl': '2rem', '5xl': '2.5rem' }
-    }
-  }
-};
-</script>
-<script src="https://cdn.tailwindcss.com?plugins=forms" defer></script>
-<script>
-// Apply tailwind config setelah Tailwind dimuat
-document.addEventListener('DOMContentLoaded', function() {
-  if (window.tailwind) tailwind.config = window.tailwindConfig;
-});
-</script>
+<!-- ── Tailwind: file statis (36KB, tidak blocking) ────── -->
+<link rel="stylesheet" href="assets/css/tailwind.css?v=20261001">
 
 <!-- ── Critical CSS (inline agar tidak blocking) ───────── -->
 <link rel="stylesheet" href="assets/css/style.css?v=20261001">
