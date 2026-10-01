@@ -1126,12 +1126,17 @@ function showMoreContent(gridId, button) {
           <!-- Multi gambar: scroll horizontal -->
           <div class="flex gap-2 mb-3 overflow-x-auto pb-1" style="scrollbar-width:thin;">
             <?php foreach ($bGambar as $gi => $gUrl): ?>
-            <?php $gWebp = preg_replace('/\.(png|jpg|jpeg)$/i', '.webp', $gUrl); ?>
+            <?php $isExternal = str_starts_with($gUrl, 'https://') || str_starts_with($gUrl, 'http://'); ?>
             <div class="flex-shrink-0 rounded-xl overflow-hidden border-2 <?= $gi===0 ? 'border-green-400' : 'border-slate-200' ?>" style="width:100px;height:75px;">
+              <?php if ($isExternal): ?>
+              <img src="<?= h($gUrl) ?>" alt="Foto <?= $gi+1 ?>" class="w-full h-full object-cover" loading="<?= $gi===0?'eager':'lazy' ?>" width="100" height="75">
+              <?php else: ?>
+              <?php $gWebp = preg_replace('/\.(png|jpg|jpeg)$/i', '.webp', $gUrl); ?>
               <picture>
                 <source srcset="<?= h($gWebp) ?>" type="image/webp">
                 <img src="<?= h($gUrl) ?>" alt="Foto <?= $gi+1 ?>" class="w-full h-full object-cover" loading="<?= $gi===0?'eager':'lazy' ?>" width="100" height="75">
               </picture>
+              <?php endif; ?>
             </div>
             <?php endforeach; ?>
           </div>
@@ -1151,11 +1156,16 @@ function showMoreContent(gridId, button) {
           <!-- Satu gambar: layout lama -->
           <div class="flex flex-col sm:flex-row gap-4 items-center">
             <div class="w-full sm:w-36 h-24 rounded-xl overflow-hidden flex-shrink-0 border-2 border-slate-200">
-              <?php $gUrl = $bGambar[0]; $gWebp = preg_replace('/\.(png|jpg|jpeg)$/i', '.webp', $gUrl); ?>
+              <?php $gUrl = $bGambar[0]; $isExternal = str_starts_with($gUrl, 'https://') || str_starts_with($gUrl, 'http://'); ?>
+              <?php if ($isExternal): ?>
+              <img src="<?= h($gUrl) ?>" alt="<?= h($b['judul']) ?>" class="w-full h-full object-cover" loading="lazy" width="144" height="96">
+              <?php else: ?>
+              <?php $gWebp = preg_replace('/\.(png|jpg|jpeg)$/i', '.webp', $gUrl); ?>
               <picture>
                 <source srcset="<?= h($gWebp) ?>" type="image/webp">
                 <img src="<?= h($gUrl) ?>" alt="<?= h($b['judul']) ?>" class="w-full h-full object-cover" loading="lazy" width="144" height="96">
               </picture>
+              <?php endif; ?>
             </div>
             <div class="space-y-1 w-full text-left">
               <span class="text-[11px] font-bold text-slate-400"><?= tgl($b['created_at']) ?></span>
