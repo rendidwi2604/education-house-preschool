@@ -92,7 +92,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['hapus_gambar_id'])) 
                     continue;
                 }
 
-                $newName = 'berita_' . time() . '_' . rand(100, 999) . '_' . $i . '.' . $ext;
+                $newName = 'berita_' . time() . '_' . rand(1000, 9999) . '_' . $i . '.' . $ext;
                 $mime    = mime_from_ext($ext);
 
                 // Coba upload ke Supabase Storage dulu
@@ -304,22 +304,91 @@ require __DIR__ . '/includes/admin_header.php';
 </form>
 
 <script>
-// ── Preview gambar sebelum upload ─────────────────────────
-function previewImages(input) {
-  var area = document.getElementById('previewArea');
-  var grid = document.getElementById('previewGrid');
-  var count = document.getElementById('previewCount');
-  grid.innerHTML = '';
+// ── Akumulasi file yang dipilih ───────────────────────────
+var allFiles = new DataTransfer(); // Simpan semua file yang sudah dipilih
 
-  if (!input.files || input.files.length === 0) {
+function previewImages(input) {
+  // Tambahkan file baru ke akumulasi (hindari duplikat by name+size)
+  if (input.files && input.files.length > 0) {
+    Array.from(input.files).forEach(function(newFile) {
+      var isDupe = false;
+      for (var j = 0; j < allFiles.files.length; j++) {
+        if (allFiles.files[j].name === newFile.name && allFiles.files[j].size === newFile.size) {
+          isDupe = true; break;
+        }
+      }
+      if (!isDupe) allFiles.items.add(newFile);
+    });
+    // Sync kembali ke input agar form submit membawa semua file
+    input.files = allFiles.files;
+  }
+
+  var area  = document.getElementById('previewArea');
+  var grid  = document.getElementById('previewGrid');
+  var count = document.getElementById('previewCount');
+
+  if (allFiles.files.length === 0) {
     area.style.display = 'none';
     return;
   }
 
+  // Render ulang semua preview
+  grid.innerHTML = '';
   area.style.display = 'block';
-  count.textContent = input.files.length + ' gambar dipilih';
+  count.textContent = allFiles.files.length + ' gambar dipilih';
 
-  Array.from(input.files).forEach(function(file, i) {
+  Array.from(allFiles.files).forEach(function(file, i) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var div = document.createElement('div');
+      div.style.cssText = 'position:relative;border-radius:10px;overflow:hidden;aspect-ratio:1;background:#F8FAFC;border:2px solid #E8ECF4;';
+      var img = document.createElement('img');
+      img.src = e.target.result;
+      img.style.cssText = 'width:100%;height:100%;object-fit:cover;';
+      // Badge nomor
+      var badge = document.createElement('span');
+      badge.textContent = '#' + (i + 1);
+      badge.style.cssText = 'position:absolute;bottom:4px;right:4px;background:rgba(0,0,0,.55);color:#fff;font-size:10px;font-weight:800;padding:1px 6px;border-radius:5px;';
+      // Tombol hapus dari preview
+      var btnDel = document.createElement('button');
+      btnDel.type = 'button';
+      btnDel.innerHTML = '&times;';
+      btnDel.style.cssText = 'position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:5px;background:rgba(239,68,68,.85);border:none;cursor:pointer;color:#fff;font-size:14px;font-weight:800;line-height:1;display:flex;align-items:center;justify-content:center;';
+      btnDel.title = 'Hapus dari antrian';
+      (function(idx) {
+        btnDel.onclick = function() { removeFromQueue(idx); };
+      })(i);
+      div.appendChild(img);
+      div.appendChild(badge);
+      div.appendChild(btnDel);
+      grid.appendChild(div);
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+// Hapus file dari antrian upload
+function removeFromQueue(idx) {
+  var newDT = new DataTransfer();
+  Array.from(allFiles.files).forEach(function(f, i) {
+    if (i !== idx) newDT.items.add(f);
+  });
+  allFiles = newDT;
+  var input = document.getElementById('gambarInput');
+  input.files = allFiles.files;
+  // Re-render tanpa input baru
+  previewImages({ files: new DataTransfer().files }); // trigger dengan files kosong
+  if (allFiles.files.length > 0) previewImages({ files: new DataTransfer().files });
+
+  // Render manual agar tidak reset
+  var area  = document.getElementById('previewArea');
+  var grid  = document.getElementById('previewGrid');
+  var count = document.getElementById('previewCount');
+  grid.innerHTML = '';
+  if (allFiles.files.length === 0) { area.style.display='none'; return; }
+  count.textContent = allFiles.files.length + ' gambar dipilih';
+  area.style.display = 'block';
+  Array.from(allFiles.files).forEach(function(file, i) {
     var reader = new FileReader();
     reader.onload = function(e) {
       var div = document.createElement('div');
@@ -330,8 +399,12 @@ function previewImages(input) {
       var badge = document.createElement('span');
       badge.textContent = '#' + (i + 1);
       badge.style.cssText = 'position:absolute;bottom:4px;right:4px;background:rgba(0,0,0,.55);color:#fff;font-size:10px;font-weight:800;padding:1px 6px;border-radius:5px;';
-      div.appendChild(img);
-      div.appendChild(badge);
+      var btnDel = document.createElement('button');
+      btnDel.type = 'button';
+      btnDel.innerHTML = '&times;';
+      btnDel.style.cssText = 'position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:5px;background:rgba(239,68,68,.85);border:none;cursor:pointer;color:#fff;font-size:14px;font-weight:800;line-height:1;display:flex;align-items:center;justify-content:center;';
+      (function(idx2) { btnDel.onclick = function() { removeFromQueue(idx2); }; })(i);
+      div.appendChild(img); div.appendChild(badge); div.appendChild(btnDel);
       grid.appendChild(div);
     };
     reader.readAsDataURL(file);
@@ -342,14 +415,12 @@ function previewImages(input) {
 function handleDrop(e) {
   e.preventDefault();
   document.getElementById('dropZone').style.background = '';
-  var input = document.getElementById('gambarInput');
   var dt = e.dataTransfer;
   if (dt.files.length > 0) {
-    // Transfer files ke input (workaround)
-    var dataTransfer = new DataTransfer();
-    Array.from(dt.files).forEach(function(f) { dataTransfer.items.add(f); });
-    input.files = dataTransfer.files;
-    previewImages(input);
+    previewImages(dt);
+    // Sync ke input
+    var input = document.getElementById('gambarInput');
+    input.files = allFiles.files;
   }
 }
 
@@ -366,7 +437,6 @@ function hapusGambar(gambarId, beritaId) {
     if (data.ok) {
       var card = document.getElementById('gcard-' + gambarId);
       if (card) card.remove();
-      // Update badge urutan
       var cards = document.querySelectorAll('#gambarGrid > div');
       cards.forEach(function(c, i) {
         var badge = c.querySelector('span');
