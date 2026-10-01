@@ -1,55 +1,133 @@
 ﻿<?php
 require __DIR__ . '/includes/auth.php';
+require __DIR__ . '/../includes/storage.php';
 
-$id = isset($_GET['id']) ? (int) $_GET['id'] : null;
+$id   = isset($_GET['id']) ? (int) $_GET['id'] : null;
 $data = ['judul' => '', 'isi' => '', 'kategori' => 'Pengumuman', 'status' => 'terbit', 'gambar' => null];
-$error = '';
+$error   = '';
+$success = '';
 
+// Load data berita + gambar existing
 if ($id) {
     $stmt = $pdo->prepare("SELECT * FROM berita WHERE id = ?");
     $stmt->execute([$id]);
     $found = $stmt->fetch();
-    if ($found) $data = $found;
+    if ($found) {
+        $data = $found;
+    } else {
+        redirect('/admin/berita.php');
+    }
+}
+
+// Ambil gambar existing dari tabel berita_gambar
+$existingGambar = [];
+if ($id) {
+    $stmtG = $pdo->prepare("SELECT * FROM berita_gambar WHERE berita_id = ? ORDER BY urutan ASC, id ASC");
+    $stmtG->execute([$id]);
+    $existingGambar = $stmtG->fetchAll();
 }
 
 $page_title = $id ? 'Edit Berita' : 'Tambah Berita';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $judul    = trim($_POST['judul'] ?? '');
-    $isi      = trim($_POST['isi'] ?? '');
+// ── Hapus satu gambar via AJAX ────────────────────────────
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['hapus_gambar_id'])) {
+    $gid = (int) $_POST['hapus_gambar_id'];
+    $stmtDel = $pdo->prepare("SELECT url FROM berita_gambar WHERE id = ? AND berita_id = ?");
+    $stmtDel->execute([$gid, $id]);
+    $gRow = $stmtDel->fetch();
+    if ($gRow) {
+        // Hapus dari Supabase Storage jika URL Supabase
+        if (str_starts_with($gRow['url'], 'https://')) {
+            $fname = basename(parse_url($gRow['url'], PHP_URL_PATH));
+            supabase_delete('berita', $fname);
+        }
+        $pdo->prepare("DELETE FROM berita_gambar WHERE id = ?")->execute([$gid]);
+    }
+    echo json_encode(['ok' => true]);
+    exit;
+}
+
+// ── Proses POST utama ─────────────────────────────────────
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['hapus_gambar_id'])) {
+    $judul    = trim($_POST['judul']    ?? '');
+    $isi      = trim($_POST['isi']      ?? '');
     $kategori = trim($_POST['kategori'] ?? 'Pengumuman');
-    $status   = $_POST['status'] === 'draft' ? 'draft' : 'terbit';
-    $gambar   = $data['gambar'];
+    $status   = ($_POST['status'] ?? '') === 'draft' ? 'draft' : 'terbit';
 
     if ($judul === '' || $isi === '') {
         $error = 'Judul dan isi berita wajib diisi.';
     } else {
-        if (!empty($_FILES['gambar']['name'])) {
-            $izin = ['jpg','jpeg','png','webp'];
-            $ext = strtolower(pathinfo($_FILES['gambar']['name'], PATHINFO_EXTENSION));
-            if (!in_array($ext, $izin)) {
-                $error = 'Format gambar harus JPG, PNG, atau WEBP.';
-            } elseif ($_FILES['gambar']['size'] > 3 * 1024 * 1024) {
-                $error = 'Ukuran gambar maksimal 3MB.';
-            } else {
-                $namaBaru = 'berita_' . time() . '_' . rand(100,999) . '.' . $ext;
-                move_uploaded_file($_FILES['gambar']['tmp_name'], __DIR__ . '/../assets/uploads/galeri/' . $namaBaru);
-                $gambar = $namaBaru;
+        // Simpan / update berita
+        if ($id) {
+            $pdo->prepare("UPDATE berita SET judul=?, isi=?, kategori=?, status=? WHERE id=?")
+                ->execute([$judul, $isi, $kategori, $status, $id]);
+        } else {
+            $pdo->prepare("INSERT INTO berita (judul, isi, kategori, status) VALUES (?,?,?,?)")
+                ->execute([$judul, $isi, $kategori, $status]);
+            $id = (int) $pdo->lastInsertId();
+            // PostgreSQL pakai lastInsertId berbeda — fallback
+            if (!$id) {
+                $id = (int) $pdo->query("SELECT lastval()")->fetchColumn();
             }
         }
-        if ($error === '') {
-            if ($id) {
-                $pdo->prepare("UPDATE berita SET judul=?, isi=?, kategori=?, status=?, gambar=? WHERE id=?")
-                    ->execute([$judul, $isi, $kategori, $status, $gambar, $id]);
-            } else {
-                $pdo->prepare("INSERT INTO berita (judul, isi, kategori, status, gambar) VALUES (?,?,?,?,?)")
-                    ->execute([$judul, $isi, $kategori, $status, $gambar]);
+
+        // Upload gambar-gambar baru (multiple)
+        $uploadErrors = [];
+        $uploadedCount = 0;
+        $files = $_FILES['gambar_baru'] ?? [];
+
+        if (!empty($files['name'][0])) {
+            $total = count($files['name']);
+            for ($i = 0; $i < $total; $i++) {
+                if ($files['error'][$i] !== UPLOAD_ERR_OK) continue;
+                if (empty($files['name'][$i])) continue;
+
+                $ext = strtolower(pathinfo($files['name'][$i], PATHINFO_EXTENSION));
+                if (!in_array($ext, ['jpg','jpeg','png','webp','gif'])) {
+                    $uploadErrors[] = "File #{$i}: format tidak didukung ({$ext})";
+                    continue;
+                }
+                if ($files['size'][$i] > 5 * 1024 * 1024) {
+                    $uploadErrors[] = "File #{$i}: ukuran melebihi 5MB";
+                    continue;
+                }
+
+                $newName = 'berita_' . time() . '_' . rand(100, 999) . '_' . $i . '.' . $ext;
+                $mime    = mime_from_ext($ext);
+                $result  = supabase_upload($files['tmp_name'][$i], 'berita', $newName, $mime);
+
+                if ($result['ok']) {
+                    // Ambil urutan tertinggi
+                    $maxUrutan = (int) $pdo->prepare("SELECT COALESCE(MAX(urutan),0)+1 FROM berita_gambar WHERE berita_id = ?")
+                                           ->execute([$id]) && false ?: 0;
+                    $stmtUrutan = $pdo->prepare("SELECT COALESCE(MAX(urutan),0)+1 FROM berita_gambar WHERE berita_id = ?");
+                    $stmtUrutan->execute([$id]);
+                    $urutan = (int) $stmtUrutan->fetchColumn();
+
+                    $pdo->prepare("INSERT INTO berita_gambar (berita_id, url, urutan) VALUES (?,?,?)")
+                        ->execute([$id, $result['url'], $urutan]);
+                    $uploadedCount++;
+                } else {
+                    $uploadErrors[] = "File #{$i}: " . $result['error'];
+                }
             }
+        }
+
+        if (!empty($uploadErrors)) {
+            $error = 'Berita tersimpan, tapi ada error upload: ' . implode('; ', $uploadErrors);
+        } else {
             redirect('/admin/berita.php?tersimpan=1');
-            exit;
         }
+
+        // Reload data & gambar setelah simpan
+        $stmt = $pdo->prepare("SELECT * FROM berita WHERE id = ?");
+        $stmt->execute([$id]);
+        $data = $stmt->fetch() ?: $data;
+
+        $stmtG = $pdo->prepare("SELECT * FROM berita_gambar WHERE berita_id = ? ORDER BY urutan ASC, id ASC");
+        $stmtG->execute([$id]);
+        $existingGambar = $stmtG->fetchAll();
     }
-    $data = ['judul'=>$judul,'isi'=>$isi,'kategori'=>$kategori,'status'=>$status,'gambar'=>$gambar];
 }
 
 require __DIR__ . '/includes/admin_header.php';
@@ -60,16 +138,16 @@ require __DIR__ . '/includes/admin_header.php';
 <?php endif; ?>
 
 <form method="post" enctype="multipart/form-data" id="beritaForm">
-<div style="display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start;">
+<div style="display:grid;grid-template-columns:1fr 360px;gap:20px;align-items:start;">
 
-  <!-- Main form -->
-  <div class="panel">
-    <div class="panel-head">
-      <h3><i class="fa-solid <?= $id ? 'fa-pen-to-square' : 'fa-circle-plus' ?>"></i>
-        <?= $id ? 'Edit Berita' : 'Tulis Berita Baru' ?>
-      </h3>
-    </div>
-
+  <!-- ── Kolom kiri: Konten ─────────────────────────────── -->
+  <div>
+    <div class="panel">
+      <div class="panel-head">
+        <h3><i class="fa-solid <?= $id ? 'fa-pen-to-square' : 'fa-circle-plus' ?>"></i>
+          <?= $id ? 'Edit Berita' : 'Tulis Berita Baru' ?>
+        </h3>
+      </div>
       <div class="form-group">
         <label><i class="fa-solid fa-heading" style="color:#F97316;"></i> Judul Berita</label>
         <input type="text" name="judul" value="<?= h($data['judul']) ?>" required
@@ -89,9 +167,54 @@ require __DIR__ . '/includes/admin_header.php';
           <i class="fa-solid fa-xmark"></i> Batal
         </a>
       </div>
+    </div>
+
+    <!-- ── Gambar existing ─────────────────────────────── -->
+    <?php if (!empty($existingGambar)): ?>
+    <div class="panel">
+      <div class="panel-head">
+        <h3><i class="fa-solid fa-images"></i> Gambar Tersimpan
+          <span style="font-size:12px;color:#94A3B8;font-weight:600;margin-left:6px;">
+            (<?= count($existingGambar) ?> gambar)
+          </span>
+        </h3>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;" id="gambarGrid">
+        <?php foreach ($existingGambar as $gi => $g): ?>
+        <?php
+          // Resolve URL tampilan
+          $dispUrl = $g['url'];
+          if (!str_starts_with($dispUrl, 'https://') && !str_starts_with($dispUrl, 'http://')) {
+              $dispUrl = '../' . ltrim($dispUrl, '/');
+          }
+        ?>
+        <div id="gcard-<?= $g['id'] ?>" style="position:relative;border-radius:12px;overflow:hidden;border:2px solid #E8ECF4;background:#F8FAFC;aspect-ratio:1;">
+          <img src="<?= h($dispUrl) ?>"
+               style="width:100%;height:100%;object-fit:cover;" loading="lazy"
+               alt="Gambar berita <?= $gi + 1 ?>">
+          <!-- Badge urutan -->
+          <span style="position:absolute;top:6px;left:6px;background:rgba(0,0,0,.55);color:#fff;font-size:10px;font-weight:800;padding:2px 7px;border-radius:6px;">
+            #<?= $gi + 1 ?>
+          </span>
+          <!-- Tombol hapus -->
+          <button type="button"
+                  onclick="hapusGambar(<?= $g['id'] ?>, <?= $id ?>)"
+                  style="position:absolute;top:6px;right:6px;width:28px;height:28px;border-radius:7px;background:rgba(239,68,68,.85);border:none;cursor:pointer;color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;"
+                  title="Hapus gambar ini">
+            <i class="fa-solid fa-trash-can"></i>
+          </button>
+        </div>
+        <?php endforeach; ?>
+      </div>
+      <p style="font-size:11.5px;color:#94A3B8;margin-top:10px;font-weight:500;">
+        <i class="fa-solid fa-circle-info"></i>
+        Klik ikon tempat sampah untuk menghapus gambar. Gambar pertama dipakai sebagai thumbnail di daftar berita.
+      </p>
+    </div>
+    <?php endif; ?>
   </div>
 
-  <!-- Sidebar options -->
+  <!-- ── Kolom kanan: Pengaturan + Upload ──────────────── -->
   <div>
     <!-- Status & Kategori -->
     <div class="panel">
@@ -109,48 +232,49 @@ require __DIR__ . '/includes/admin_header.php';
       <div class="form-group" style="margin-bottom:0;">
         <label><i class="fa-solid fa-toggle-on" style="color:#58A834;"></i> Status Publikasi</label>
         <select name="status">
-          <option value="terbit" <?= $data['status'] === 'terbit' ? 'selected' : '' ?>>
-            Terbit (tampil di halaman publik)
-          </option>
-          <option value="draft" <?= $data['status'] === 'draft' ? 'selected' : '' ?>>
-            Draft (belum tampil)
-          </option>
+          <option value="terbit" <?= $data['status'] === 'terbit' ? 'selected' : '' ?>>Terbit (tampil di halaman publik)</option>
+          <option value="draft"  <?= $data['status'] === 'draft'  ? 'selected' : '' ?>>Draft (belum tampil)</option>
         </select>
       </div>
     </div>
 
-    <!-- Gambar — INSIDE the same <form> -->
+    <!-- Upload Gambar Baru (multiple) -->
     <div class="panel">
       <div class="panel-head" style="padding-bottom:12px;margin-bottom:14px;">
-        <h3><i class="fa-solid fa-image"></i> Gambar Berita</h3>
+        <h3><i class="fa-solid fa-cloud-arrow-up"></i> Upload Gambar</h3>
       </div>
-      <?php if ($data['gambar']): ?>
-      <img src="../assets/uploads/galeri/<?= h($data['gambar']) ?>"
-           id="imgPreview"
-           style="width:100%;border-radius:12px;object-fit:cover;aspect-ratio:16/9;margin-bottom:12px;">
-      <?php else: ?>
-      <div id="imgPlaceholder" style="width:100%;aspect-ratio:16/9;border-radius:12px;background:#F8FAFC;border:2px dashed #E2E8F0;display:flex;flex-direction:column;align-items:center;justify-content:center;margin-bottom:12px;color:#94A3B8;">
-        <i class="fa-solid fa-image" style="font-size:28px;margin-bottom:6px;"></i>
-        <span style="font-size:12px;font-weight:600;">Belum ada gambar</span>
-      </div>
-      <img id="imgPreview" style="display:none;width:100%;border-radius:12px;aspect-ratio:16/9;object-fit:cover;margin-bottom:12px;">
-      <?php endif; ?>
 
-      <div class="form-group" style="margin-bottom:0;">
-        <div class="dropzone" onclick="document.getElementById('gambarInput').click();"
-             style="cursor:pointer;">
-          <i class="fa-solid fa-cloud-arrow-up" style="font-size:20px;display:block;margin-bottom:5px;"></i>
-          Klik untuk pilih gambar
-          <div style="font-size:11px;color:#818CF8;font-weight:600;margin-top:3px;">JPG, PNG, WEBP · Maks 3MB</div>
-        </div>
-        <!-- ✅ File input ADA di dalam <form id="beritaForm"> — tidak pakai form="" attribute -->
-        <input type="file" name="gambar" id="gambarInput"
-               accept=".jpg,.jpeg,.png,.webp"
-               style="display:none;" onchange="previewImg(this)">
-        <span class="form-help" style="margin-top:6px;display:block;">
-          Biarkan kosong jika tidak ingin mengubah gambar.
-        </span>
+      <!-- Preview area -->
+      <div id="previewArea" style="display:none;margin-bottom:14px;">
+        <div id="previewGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;margin-bottom:8px;"></div>
+        <p id="previewCount" style="font-size:12px;color:#6B7280;font-weight:600;margin:0;"></p>
       </div>
+
+      <!-- Drop zone -->
+      <div class="dropzone" id="dropZone"
+           onclick="document.getElementById('gambarInput').click();"
+           ondragover="event.preventDefault();this.style.background='#DDF0D7';"
+           ondragleave="this.style.background='';"
+           ondrop="handleDrop(event);"
+           style="padding:20px;text-align:center;">
+        <i class="fa-solid fa-images" style="font-size:28px;display:block;margin-bottom:8px;"></i>
+        <strong>Klik atau seret gambar ke sini</strong>
+        <div style="font-size:11.5px;color:#818CF8;font-weight:600;margin-top:5px;">Bisa pilih banyak gambar sekaligus</div>
+        <div style="font-size:11px;color:#A5B4FC;margin-top:3px;">JPG · PNG · WEBP · GIF — Maks 5MB per file</div>
+      </div>
+
+      <input type="file" name="gambar_baru[]" id="gambarInput"
+             accept=".jpg,.jpeg,.png,.webp,.gif"
+             multiple
+             style="display:none;" onchange="previewImages(this)">
+
+      <span class="form-help" style="margin-top:8px;display:block;">
+        <i class="fa-solid fa-circle-info"></i>
+        Gambar diupload ke Supabase Storage saat klik "Simpan Berita".
+        <?php if (!getenv('SUPABASE_URL')): ?>
+        <strong style="color:#DC2626;">SUPABASE_URL belum diset di env variables!</strong>
+        <?php endif; ?>
+      </span>
     </div>
   </div>
 
@@ -158,18 +282,77 @@ require __DIR__ . '/includes/admin_header.php';
 </form>
 
 <script>
-function previewImg(input) {
-  var preview     = document.getElementById('imgPreview');
-  var placeholder = document.getElementById('imgPlaceholder');
-  if (input.files && input.files[0]) {
+// ── Preview gambar sebelum upload ─────────────────────────
+function previewImages(input) {
+  var area = document.getElementById('previewArea');
+  var grid = document.getElementById('previewGrid');
+  var count = document.getElementById('previewCount');
+  grid.innerHTML = '';
+
+  if (!input.files || input.files.length === 0) {
+    area.style.display = 'none';
+    return;
+  }
+
+  area.style.display = 'block';
+  count.textContent = input.files.length + ' gambar dipilih';
+
+  Array.from(input.files).forEach(function(file, i) {
     var reader = new FileReader();
     reader.onload = function(e) {
-      preview.src          = e.target.result;
-      preview.style.display = 'block';
-      if (placeholder) placeholder.style.display = 'none';
+      var div = document.createElement('div');
+      div.style.cssText = 'position:relative;border-radius:10px;overflow:hidden;aspect-ratio:1;background:#F8FAFC;border:2px solid #E8ECF4;';
+      var img = document.createElement('img');
+      img.src = e.target.result;
+      img.style.cssText = 'width:100%;height:100%;object-fit:cover;';
+      var badge = document.createElement('span');
+      badge.textContent = '#' + (i + 1);
+      badge.style.cssText = 'position:absolute;bottom:4px;right:4px;background:rgba(0,0,0,.55);color:#fff;font-size:10px;font-weight:800;padding:1px 6px;border-radius:5px;';
+      div.appendChild(img);
+      div.appendChild(badge);
+      grid.appendChild(div);
     };
-    reader.readAsDataURL(input.files[0]);
+    reader.readAsDataURL(file);
+  });
+}
+
+// ── Drag & drop ───────────────────────────────────────────
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('dropZone').style.background = '';
+  var input = document.getElementById('gambarInput');
+  var dt = e.dataTransfer;
+  if (dt.files.length > 0) {
+    // Transfer files ke input (workaround)
+    var dataTransfer = new DataTransfer();
+    Array.from(dt.files).forEach(function(f) { dataTransfer.items.add(f); });
+    input.files = dataTransfer.files;
+    previewImages(input);
   }
+}
+
+// ── Hapus gambar existing via fetch ──────────────────────
+function hapusGambar(gambarId, beritaId) {
+  if (!confirm('Hapus gambar ini?')) return;
+  fetch(window.location.href, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: 'hapus_gambar_id=' + gambarId
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.ok) {
+      var card = document.getElementById('gcard-' + gambarId);
+      if (card) card.remove();
+      // Update badge urutan
+      var cards = document.querySelectorAll('#gambarGrid > div');
+      cards.forEach(function(c, i) {
+        var badge = c.querySelector('span');
+        if (badge) badge.textContent = '#' + (i + 1);
+      });
+    }
+  })
+  .catch(function() { alert('Gagal menghapus gambar.'); });
 }
 </script>
 

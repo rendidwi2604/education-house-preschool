@@ -10,6 +10,31 @@ try {
   $testimoniOrangtua = $pdo->query('SELECT * FROM testimoni_orangtua ORDER BY created_at DESC')->fetchAll();
 } catch (PDOException $e) { /* migrasi kegiatan dan testimoni belum dijalankan */ }
 $berita  = $pdo->query("SELECT * FROM berita WHERE status = 'terbit' AND kategori = 'Prestasi' ORDER BY created_at DESC")->fetchAll();
+
+// Ambil semua gambar untuk berita yang ditampilkan
+$beritaGambarMap = [];
+try {
+    $beritaIds = array_column($berita, 'id');
+    if (!empty($beritaIds)) {
+        $placeholders = implode(',', array_fill(0, count($beritaIds), '?'));
+        $stmtBG = $pdo->prepare(
+            "SELECT * FROM berita_gambar WHERE berita_id IN ($placeholders) ORDER BY berita_id, urutan ASC, id ASC"
+        );
+        $stmtBG->execute($beritaIds);
+        foreach ($stmtBG->fetchAll() as $bg) {
+            $beritaGambarMap[$bg['berita_id']][] = $bg['url'];
+        }
+    }
+} catch (PDOException $e) {
+    // Tabel belum ada, fallback ke kolom gambar lama
+    foreach ($berita as $b) {
+        if (!empty($b['gambar'])) {
+            $beritaGambarMap[$b['id']][] = str_starts_with($b['gambar'], 'https://')
+                ? $b['gambar']
+                : 'assets/uploads/galeri/' . $b['gambar'];
+        }
+    }
+}
 $guru    = $pdo->query("SELECT * FROM guru ORDER BY created_at ASC")->fetchAll();
 $instagramPosts = [];
 try {
@@ -1080,32 +1105,71 @@ function showMoreContent(gridId, button) {
         </div>
         <?php else: ?>
         <?php foreach ($berita as $index => $b): ?>
-        <div class="p-3.5 rounded-2xl bg-slate-50 hover:bg-purple-50/50 border border-slate-200/70 transition-all flex flex-col sm:flex-row gap-4 items-center <?= $index >= 3 ? 'berita-extra hidden' : '' ?>">
-          <div class="w-full sm:w-36 h-24 rounded-xl overflow-hidden flex-shrink-0">
-            <?php if ($b['gambar']): ?>
-            <?php $beritaWebp = webp_src('assets/uploads/galeri', $b['gambar']); ?>
-            <picture>
-              <source srcset="<?= h($beritaWebp) ?>" type="image/webp">
-              <img src="assets/uploads/galeri/<?= h($b['gambar']) ?>" alt="<?= h($b['judul']) ?>" class="w-full h-full object-cover" loading="lazy" width="144" height="96">
-            </picture>
-            <?php else: ?>
-            <div class="w-full h-full bg-slate-200 flex items-center justify-center text-slate-400">
-              <i class="fa-regular fa-image text-2xl"></i>
+        <?php $bGambar = $beritaGambarMap[$b['id']] ?? []; ?>
+        <div class="p-3.5 rounded-2xl bg-slate-50 hover:bg-purple-50/50 border border-slate-200/70 transition-all <?= $index >= 3 ? 'berita-extra hidden' : '' ?>">
+
+          <?php if (count($bGambar) > 1): ?>
+          <!-- Multi gambar: scroll horizontal -->
+          <div class="flex gap-2 mb-3 overflow-x-auto pb-1" style="scrollbar-width:thin;">
+            <?php foreach ($bGambar as $gi => $gUrl): ?>
+            <?php $gWebp = preg_replace('/\.(png|jpg|jpeg)$/i', '.webp', $gUrl); ?>
+            <div class="flex-shrink-0 rounded-xl overflow-hidden border-2 <?= $gi===0 ? 'border-green-400' : 'border-slate-200' ?>" style="width:100px;height:75px;">
+              <picture>
+                <source srcset="<?= h($gWebp) ?>" type="image/webp">
+                <img src="<?= h($gUrl) ?>" alt="Foto <?= $gi+1 ?>" class="w-full h-full object-cover" loading="<?= $gi===0?'eager':'lazy' ?>" width="100" height="75">
+              </picture>
             </div>
-            <?php endif; ?>
+            <?php endforeach; ?>
           </div>
-          <div class="space-y-1 w-full text-left">
-            <span class="text-[11px] font-bold text-slate-400"><?= tgl($b['created_at']) ?></span>
-            <h4 class="font-heading font-bold text-base text-slate-800 hover:text-kid-purple transition-colors">
-              <?= h($b['judul']) ?>
-            </h4>
-            <p class="text-xs text-slate-500 line-clamp-2">
-              <?= h(mb_strimwidth($b['isi'], 0, 100, '...')) ?>
-            </p>
+          <div class="space-y-1 text-left">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="text-[11px] font-bold text-slate-400"><?= tgl($b['created_at']) ?></span>
+              <span style="font-size:10px;background:#DCFCE7;color:#166534;font-weight:800;padding:1px 7px;border-radius:5px;"><?= count($bGambar) ?> foto</span>
+            </div>
+            <h4 class="font-heading font-bold text-base text-slate-800 hover:text-kid-purple transition-colors"><?= h($b['judul']) ?></h4>
+            <p class="text-xs text-slate-500 line-clamp-2"><?= h(mb_strimwidth($b['isi'], 0, 100, '...')) ?></p>
             <a href="berita_detail.php?id=<?= (int)$b['id'] ?>" class="inline-flex items-center text-xs font-bold text-kid-purple hover:underline pt-1">
               Baca Selengkapnya <i class="fa-solid fa-arrow-right text-[10px] ml-1"></i>
             </a>
           </div>
+
+          <?php elseif (count($bGambar) === 1): ?>
+          <!-- Satu gambar: layout lama -->
+          <div class="flex flex-col sm:flex-row gap-4 items-center">
+            <div class="w-full sm:w-36 h-24 rounded-xl overflow-hidden flex-shrink-0 border-2 border-slate-200">
+              <?php $gUrl = $bGambar[0]; $gWebp = preg_replace('/\.(png|jpg|jpeg)$/i', '.webp', $gUrl); ?>
+              <picture>
+                <source srcset="<?= h($gWebp) ?>" type="image/webp">
+                <img src="<?= h($gUrl) ?>" alt="<?= h($b['judul']) ?>" class="w-full h-full object-cover" loading="lazy" width="144" height="96">
+              </picture>
+            </div>
+            <div class="space-y-1 w-full text-left">
+              <span class="text-[11px] font-bold text-slate-400"><?= tgl($b['created_at']) ?></span>
+              <h4 class="font-heading font-bold text-base text-slate-800 hover:text-kid-purple transition-colors"><?= h($b['judul']) ?></h4>
+              <p class="text-xs text-slate-500 line-clamp-2"><?= h(mb_strimwidth($b['isi'], 0, 100, '...')) ?></p>
+              <a href="berita_detail.php?id=<?= (int)$b['id'] ?>" class="inline-flex items-center text-xs font-bold text-kid-purple hover:underline pt-1">
+                Baca Selengkapnya <i class="fa-solid fa-arrow-right text-[10px] ml-1"></i>
+              </a>
+            </div>
+          </div>
+
+          <?php else: ?>
+          <!-- Tidak ada gambar -->
+          <div class="flex flex-col sm:flex-row gap-4 items-center">
+            <div class="w-full sm:w-36 h-24 rounded-xl bg-slate-200 flex items-center justify-center text-slate-400 flex-shrink-0">
+              <i class="fa-regular fa-image text-2xl"></i>
+            </div>
+            <div class="space-y-1 w-full text-left">
+              <span class="text-[11px] font-bold text-slate-400"><?= tgl($b['created_at']) ?></span>
+              <h4 class="font-heading font-bold text-base text-slate-800 hover:text-kid-purple transition-colors"><?= h($b['judul']) ?></h4>
+              <p class="text-xs text-slate-500 line-clamp-2"><?= h(mb_strimwidth($b['isi'], 0, 100, '...')) ?></p>
+              <a href="berita_detail.php?id=<?= (int)$b['id'] ?>" class="inline-flex items-center text-xs font-bold text-kid-purple hover:underline pt-1">
+                Baca Selengkapnya <i class="fa-solid fa-arrow-right text-[10px] ml-1"></i>
+              </a>
+            </div>
+          </div>
+          <?php endif; ?>
+
         </div>
         <?php endforeach; ?>
         <?php if (count($berita) > 3): ?>
