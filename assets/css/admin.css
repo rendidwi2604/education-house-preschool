@@ -744,7 +744,12 @@ table tr:hover td { background: #FAFBFF; }
   .side { transform: translateX(-100%); transition: transform .26s; }
   .side.open { transform: translateX(0); }
   .main { margin-left: 0; }
-  .mob-menu-btn { display: flex !important; }
+  /* Tampilkan tombol hamburger di mobile */
+  .mob-menu-btn {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+  }
   .content { padding: 16px; }
   .topbar { padding: 0 16px; }
   .dashboard-quick-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -752,7 +757,7 @@ table tr:hover td { background: #FAFBFF; }
 
 @media (max-width: 520px) {
   .dashboard-quick-actions { grid-template-columns: 1fr; }
-  .dashboard-hero { padding: 22px 20px; }
+  .dashboard-hero { flex-direction: column; align-items: flex-start; padding: 22px 20px; }
   .panel { padding: 18px 16px; }
   .login-shell { padding: 16px; }
   .login-box { padding: 28px 22px; }

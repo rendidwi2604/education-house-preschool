@@ -120,13 +120,4 @@ function closeSidebar(){
   document.getElementById('mob-backdrop').style.display='none';
   document.body.style.overflow='';
 }
-// Show mobile menu btn on small screens
-(function(){
-  var btn = document.getElementById('mob-menu-btn');
-  if(btn && window.innerWidth <= 768) btn.style.display='flex';
-  window.addEventListener('resize', function(){
-    if(!btn) return;
-    btn.style.display = window.innerWidth <= 768 ? 'flex' : 'none';
-  });
-})();
 </script>

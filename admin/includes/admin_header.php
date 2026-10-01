@@ -23,7 +23,8 @@
       <div style="display:flex;align-items:center;gap:12px;">
         <!-- Mobile hamburger -->
         <button id="mob-menu-btn" onclick="openSidebar()"
-                style="display:none;width:36px;height:36px;border-radius:10px;border:1.5px solid #E8ECF4;background:#fff;cursor:pointer;align-items:center;justify-content:center;color:#6B7280;font-size:16px;">
+                class="mob-menu-btn"
+                style="width:36px;height:36px;border-radius:10px;border:1.5px solid #E8ECF4;background:#fff;cursor:pointer;align-items:center;justify-content:center;color:#6B7280;font-size:16px;display:none;">
           <i class="fa-solid fa-bars"></i>
         </button>
         <div class="page-title">
