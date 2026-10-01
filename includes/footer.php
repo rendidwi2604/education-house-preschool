@@ -9,8 +9,13 @@
     <!-- Brand -->
     <div>
       <a href="index.php" style="display:inline-flex;align-items:center;gap:10px;text-decoration:none;margin-bottom:14px;">
-        <img src="assets/img/Logo_EduHouse.png" alt="Education House Logo"
-             style="height:44px;width:auto;object-fit:contain;filter:drop-shadow(0 2px 6px rgba(0,0,0,.35));">
+        <picture>
+          <source srcset="assets/img/Logo_EduHouse.webp" type="image/webp">
+          <img src="assets/img/Logo_EduHouse.png" alt="Logo Education House Preschool"
+               width="44" height="44"
+               style="height:44px;width:auto;object-fit:contain;filter:drop-shadow(0 2px 6px rgba(0,0,0,.35));"
+               loading="lazy">
+        </picture>
       </a>
 
       <p style="font-size:13px;line-height:1.7;color:#BBF7D0;margin:0 0 18px;max-width:220px;">

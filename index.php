@@ -196,17 +196,24 @@ require 'includes/header.php';
 
               <?php foreach ($sliders as $si => $sl): ?>
               <?php
-                $hasImg = !empty($sl['gambar']) && file_exists(__DIR__ . '/assets/uploads/slider/' . $sl['gambar']);
-                $imgSrc = $hasImg ? 'assets/uploads/slider/' . h($sl['gambar']) : 'assets/img/Ref.jpg';
+                $hasImg  = !empty($sl['gambar']);
+                $rawSrc  = $hasImg ? 'assets/uploads/slider/' . $sl['gambar'] : 'assets/img/Ref.jpg';
+                $imgSrc  = $hasImg ? webp_src('assets/uploads/slider', $sl['gambar']) : 'assets/img/Ref.webp';
+                $imgAlt  = h($sl['judul'] ?? 'Slide ' . ($si+1));
+                $isFirst = ($si === 0);
               ?>
-              <div class="hero-slide <?= $si === 0 ? 'active' : '' ?>"
+              <div class="hero-slide <?= $isFirst ? 'active' : '' ?>"
                    data-index="<?= $si ?>"
-                    style="display:<?= $si === 0 ? 'block' : 'none' ?>;position:relative;">
-                <!-- Gambar — lebar penuh, tinggi mengikuti rasio asli -->
-                <img src="<?= $imgSrc ?>"
-                     alt="<?= h($sl['judul'] ?? 'Slide ' . ($si+1)) ?>"
-                     class="w-full h-auto block"
-                   style="width:100%;height:auto;max-height:none;object-fit:contain;object-position:center top;">
+                   style="display:<?= $isFirst ? 'block' : 'none' ?>;position:relative;">
+                <picture>
+                  <source srcset="<?= h($imgSrc) ?>" type="image/webp">
+                  <img src="<?= h($rawSrc) ?>"
+                       alt="<?= $imgAlt ?>"
+                       class="w-full h-auto block"
+                       style="width:100%;height:auto;max-height:none;object-fit:contain;object-position:center top;"
+                       <?= $isFirst ? 'fetchpriority="high"' : 'loading="lazy"' ?>
+                       width="480" height="480">
+                </picture>
 
                 <?php if (!empty($sl['judul']) || !empty($sl['subjudul'])): ?>
                 <!-- Caption overlay -->
@@ -369,7 +376,7 @@ require 'includes/header.php';
             <p class="text-purple-200 text-xs font-medium">Usia (2 - 3 Thn)</p>
           </div>
           <div class="rounded-2xl overflow-hidden border-2 border-white/40 shadow-inner aspect-[4/3] mb-4 bg-purple-900/20">
-            <img src="assets/img/lingkungan.png" alt="Kelompok anak" class="w-full h-full object-cover">
+            <picture><source srcset="assets/img/lingkungan.webp" type="image/webp"><img src="assets/img/lingkungan.png" alt="Kelompok anak" class="w-full h-full object-cover" loading="lazy" width="400" height="300"></picture>
           </div>
           <p class="text-purple-100 text-xs sm:text-sm leading-relaxed mb-4">
            Fokus pada stimulasi motorik, bahasa, sosial emosional, dan kemandirian melalui kegiatan bermain yang menyenangkan dan edukatif.
@@ -388,7 +395,7 @@ require 'includes/header.php';
             <p class="text-orange-100 text-xs font-medium">Kelompok Bermain (3-4 Thn)</p>
           </div>
           <div class="rounded-2xl overflow-hidden border-2 border-white/40 shadow-inner aspect-[4/3] mb-4 bg-orange-900/20">
-            <img src="assets/img/playgrup.jpeg" alt="Anak perempuan riang" class="w-full h-full object-cover">
+            <picture><source srcset="assets/img/playgrup.webp" type="image/webp"><img src="assets/img/playgrup.jpeg" alt="Anak perempuan riang" class="w-full h-full object-cover" loading="lazy" width="400" height="300"></picture>
           </div>
           <p class="text-orange-50 text-xs sm:text-sm leading-relaxed mb-4">
             Aktivitas seru mulai mengenal konsep dasar belajar, bersosialisasi, kreativitas,serta explorasi lingkungan sekitar. </p>
@@ -406,7 +413,7 @@ require 'includes/header.php';
             <p class="text-green-100 text-xs font-medium">Usia (4-5 Thn)</p>
           </div>
           <div class="rounded-2xl overflow-hidden border-2 border-white/40 shadow-inner aspect-[4/3] mb-4 bg-green-900/20">
-            <img src="assets/img/kind_A.png" alt="Anak-anak belajar membaca" class="w-full h-full object-cover">
+            <picture><source srcset="assets/img/kind_A.webp" type="image/webp"><img src="assets/img/kind_A.png" alt="Anak-anak belajar membaca" class="w-full h-full object-cover" loading="lazy" width="400" height="300"></picture>
           </div>
           <p class="text-emerald-50 text-xs sm:text-sm leading-relaxed mb-4">
             Mengembangkan kemampuan bahasa, kognitif, motorik ,kreativitas dan kesiapan belajar melalui berbagai aktivitas edukatif.
@@ -425,7 +432,7 @@ require 'includes/header.php';
             <p class="text-orange-100 text-xs font-medium">Usia (5 - 6 Thn)</p>
           </div>
           <div class="rounded-2xl overflow-hidden border-2 border-white/40 shadow-inner aspect-[4/3] mb-4 bg-orange-900/20">
-            <img src="assets/img/kind_B.png" alt="Anak perempuan ceria" class="w-full h-full object-cover">
+            <picture><source srcset="assets/img/kind_B.webp" type="image/webp"><img src="assets/img/kind_B.png" alt="Anak perempuan ceria" class="w-full h-full object-cover" loading="lazy" width="400" height="300"></picture>
           </div>
           <p class="text-orange-50 text-xs sm:text-sm leading-relaxed mb-4">
             Mempersiapkan anak menuju jenjang sekolah dasar dan pembelajaran yang menyenangkan, meliputi membaca, menulis, berhitung, karakter, dan kemandirian.
@@ -534,7 +541,11 @@ require 'includes/header.php';
            aria-label="Lihat profil lengkap <?= h($g['nama']) ?>">
         <?php if ($g['foto']): ?>
         <div class="w-24 h-24 mx-auto rounded-full overflow-hidden border-4 border-<?= $border_color ?> shadow-md mb-4">
-          <img src="assets/uploads/guru/<?= h($g['foto']) ?>" alt="<?= h($g['nama']) ?>" class="w-full h-full object-cover">
+          <?php $guruWebp = webp_src('assets/uploads/guru', $g['foto']); ?>
+          <picture>
+            <source srcset="<?= h($guruWebp) ?>" type="image/webp">
+            <img src="assets/uploads/guru/<?= h($g['foto']) ?>" alt="<?= h($g['nama']) ?>" class="w-full h-full object-cover" loading="lazy" width="96" height="96">
+          </picture>
         </div>
         <?php else: ?>
         <div class="w-24 h-24 mx-auto rounded-full bg-<?= $badge_bg ?> border-4 border-<?= $border_color ?> shadow-md mb-4 flex items-center justify-center text-slate-400 text-2xl">
@@ -723,7 +734,7 @@ require 'includes/header.php';
       <?php foreach ($galeri as $idx => $g): ?>
       <div class="group relative rounded-2xl overflow-hidden border-4 border-white shadow-md aspect-square bg-white transition-all hover:scale-105 hover:shadow-xl cursor-pointer <?= $momentIndex >= 5 ? 'moment-extra hidden' : '' ?>"
            onclick="openLightbox(<?= $idx ?>)" title="<?= h($g['keterangan']) ?>">
-        <img src="assets/uploads/galeri/<?= h($g['gambar']) ?>" alt="<?= h($g['keterangan']) ?>" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300">
+        <img src="assets/uploads/galeri/<?= h($g['gambar']) ?>" alt="<?= h($g['keterangan']) ?>" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" loading="lazy" width="300" height="300">
         <!-- Overlay on hover -->
         <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
           <?php if ($g['keterangan']): ?>
@@ -954,7 +965,7 @@ function showMoreContent(gridId, button) {
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-12 gap-5 items-center">
           <div class="sm:col-span-5 rounded-2xl overflow-hidden border-2 border-slate-100 shadow-md aspect-[4/3]">
-            <img src="assets/img/logoHD.png" alt="Guru bercerita" class="w-full h-full object-cover">
+            <img src="assets/img/logoHD.webp" alt="Logo Education House Preschool" class="w-full h-full object-cover" loading="lazy" width="400" height="300">
           </div>
           <div class="sm:col-span-7">
             <p class="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
@@ -1061,7 +1072,11 @@ function showMoreContent(gridId, button) {
         <div class="p-3.5 rounded-2xl bg-slate-50 hover:bg-purple-50/50 border border-slate-200/70 transition-all flex flex-col sm:flex-row gap-4 items-center <?= $index >= 3 ? 'berita-extra hidden' : '' ?>">
           <div class="w-full sm:w-36 h-24 rounded-xl overflow-hidden flex-shrink-0">
             <?php if ($b['gambar']): ?>
-            <img src="assets/uploads/galeri/<?= h($b['gambar']) ?>" alt="" class="w-full h-full object-cover">
+            <?php $beritaWebp = webp_src('assets/uploads/galeri', $b['gambar']); ?>
+            <picture>
+              <source srcset="<?= h($beritaWebp) ?>" type="image/webp">
+              <img src="assets/uploads/galeri/<?= h($b['gambar']) ?>" alt="<?= h($b['judul']) ?>" class="w-full h-full object-cover" loading="lazy" width="144" height="96">
+            </picture>
             <?php else: ?>
             <div class="w-full h-full bg-slate-200 flex items-center justify-center text-slate-400">
               <i class="fa-regular fa-image text-2xl"></i>

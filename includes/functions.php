@@ -12,6 +12,59 @@ function redirect(string $path): void {
     exit;
 }
 
+/**
+ * Render tag <picture> dengan WebP + fallback PNG/JPEG.
+ * Otomatis tambah loading="lazy" kecuali $eager=true (untuk LCP).
+ *
+ * @param string $src      Path relatif gambar asli, contoh: 'assets/img/kind_A.png'
+ * @param string $alt      Alt text
+ * @param string $class    CSS class untuk <img>
+ * @param string $style    Inline style untuk <img>
+ * @param bool   $eager    true = fetchpriority="high" (LCP image), false = lazy
+ * @param string $width    Width attribute
+ * @param string $height   Height attribute
+ */
+function picture(
+    string $src,
+    string $alt,
+    string $class  = '',
+    string $style  = '',
+    bool   $eager  = false,
+    string $width  = '',
+    string $height = ''
+): void {
+    // Buat path WebP: ganti ekstensi atau tambahkan .webp
+    $webp = preg_replace('/\.(png|jpg|jpeg)$/i', '.webp', $src);
+
+    $loading   = $eager ? '' : ' loading="lazy"';
+    $priority  = $eager ? ' fetchpriority="high"' : '';
+    $widthAttr = $width  ? " width=\"{$width}\""  : '';
+    $heightAttr= $height ? " height=\"{$height}\"" : '';
+
+    echo '<picture>';
+    echo '<source srcset="' . h($webp) . '" type="image/webp">';
+    echo '<img src="' . h($src) . '" alt="' . h($alt) . '"'
+        . ($class  ? ' class="' . h($class) . '"'   : '')
+        . ($style  ? ' style="' . h($style) . '"'   : '')
+        . $loading . $priority . $widthAttr . $heightAttr . '>';
+    echo '</picture>';
+}
+
+/**
+ * Buat WebP src dari path gambar uploads (slider, galeri, guru).
+ * Returns WebP path jika file ada, fallback ke original.
+ */
+function webp_src(string $folder, string $filename): string {
+    if (empty($filename)) return '';
+    $webpName = preg_replace('/\.(png|jpg|jpeg)$/i', '.webp', $filename);
+    // Di Vercel filesystem tersedia via APP_ROOT atau __DIR__ dari caller
+    $base = defined('APP_ROOT') ? APP_ROOT : dirname(__DIR__);
+    if (file_exists($base . '/' . $folder . '/' . $webpName)) {
+        return $folder . '/' . $webpName;
+    }
+    return $folder . '/' . $filename;
+}
+
 // Format tanggal Indonesia sederhana, contoh: 23 Sep 2026
 function tgl($datetime) {
     $bulan = ['01'=>'Jan','02'=>'Feb','03'=>'Mar','04'=>'Apr','05'=>'Mei','06'=>'Jun',
