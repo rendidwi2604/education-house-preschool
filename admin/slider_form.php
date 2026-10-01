@@ -1,5 +1,6 @@
 ﻿<?php
 require __DIR__ . '/includes/auth.php';
+require __DIR__ . '/../includes/storage.php';
 
 $id   = isset($_GET['id']) ? (int) $_GET['id'] : null;
 $data = ['judul' => '', 'subjudul' => '', 'gambar' => null, 'urutan' => 0, 'aktif' => 1];
@@ -24,8 +25,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $aktif    = isset($_POST['aktif']) ? 1 : 0;
     $gambar   = $data['gambar'];
 
-    // Upload gambar baru
-    if (!empty($_FILES['gambar']['name'])) {
+    // Upload gambar baru ke Supabase Storage
+    if (!empty($_FILES['gambar']['name']) && $_FILES['gambar']['error'] === UPLOAD_ERR_OK) {
         $izin = ['jpg','jpeg','png','webp','gif'];
         $ext  = strtolower(pathinfo($_FILES['gambar']['name'], PATHINFO_EXTENSION));
 
@@ -34,17 +35,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } elseif ($_FILES['gambar']['size'] > 5 * 1024 * 1024) {
             $error = 'Ukuran gambar maksimal 5MB.';
         } else {
-            $folder  = __DIR__ . '/../assets/uploads/slider/';
-            $newName = 'slide_' . time() . '_' . rand(100, 999) . '.' . $ext;
-            if (!is_dir($folder)) mkdir($folder, 0755, true);
-            if (move_uploaded_file($_FILES['gambar']['tmp_name'], $folder . $newName)) {
-                // Hapus gambar lama jika ada
-                if ($id && $data['gambar'] && is_file($folder . $data['gambar'])) {
-                    unlink($folder . $data['gambar']);
+            $newName  = 'slide_' . time() . '_' . rand(100, 999) . '.' . $ext;
+            $mime     = mime_from_ext($ext);
+            $result   = supabase_upload($_FILES['gambar']['tmp_name'], 'slider', $newName, $mime);
+
+            if ($result['ok']) {
+                // Hapus gambar lama dari Supabase Storage
+                if ($id && $data['gambar']) {
+                    supabase_delete('slider', $data['gambar']);
                 }
                 $gambar = $newName;
             } else {
-                $error = 'Gagal menyimpan file, periksa permission folder uploads/slider.';
+                $error = 'Gagal upload: ' . $result['error'];
             }
         }
     }
@@ -59,7 +61,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pdo->prepare("UPDATE slider SET judul=?, subjudul=?, gambar=?, urutan=?, aktif=? WHERE id=?")
                 ->execute([$judul ?: null, $subjudul ?: null, $gambar, $urutan, $aktif, $id]);
         } else {
-            // Auto urutan terakhir jika tidak diisi
             if ($urutan === 0) {
                 $max = $pdo->query("SELECT COALESCE(MAX(urutan),0)+1 FROM slider")->fetchColumn();
                 $urutan = (int) $max;
@@ -71,7 +72,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    // Re-populate on error
     $data = compact('judul', 'subjudul', 'gambar', 'urutan', 'aktif');
 }
 

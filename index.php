@@ -28,7 +28,7 @@ try {
 // Slider hero — ambil yang aktif, urut sesuai urutan
 $sliders = [];
 try {
-    $sliders = $pdo->query("SELECT * FROM slider WHERE aktif = 1 ORDER BY urutan ASC, id ASC")->fetchAll();
+    $sliders = $pdo->query("SELECT * FROM slider WHERE aktif = TRUE ORDER BY urutan ASC, id ASC")->fetchAll();
 } catch (PDOException $e) { /* tabel belum ada, abaikan */ }
 
 // Fallback: satu slide default jika tabel kosong / belum ada
@@ -196,9 +196,20 @@ require 'includes/header.php';
 
               <?php foreach ($sliders as $si => $sl): ?>
               <?php
-                $hasImg  = !empty($sl['gambar']);
-                $rawSrc  = $hasImg ? 'assets/uploads/slider/' . $sl['gambar'] : 'assets/img/Ref.jpg';
-                $imgSrc  = $hasImg ? webp_src('assets/uploads/slider', $sl['gambar']) : 'assets/img/Ref.webp';
+                $gambarVal = $sl['gambar'] ?? '';
+                // Cek apakah gambar adalah URL Supabase Storage atau nama file lokal
+                if (str_starts_with($gambarVal, 'https://')) {
+                    // Supabase Storage URL langsung
+                    $rawSrc = $gambarVal;
+                    $imgSrc = $gambarVal;
+                } elseif (!empty($gambarVal)) {
+                    // File lokal (data lama dari assets/uploads/slider)
+                    $rawSrc = 'assets/uploads/slider/' . $gambarVal;
+                    $imgSrc = webp_src('assets/uploads/slider', $gambarVal);
+                } else {
+                    $rawSrc = 'assets/img/Ref.jpg';
+                    $imgSrc = 'assets/img/Ref.webp';
+                }
                 $imgAlt  = h($sl['judul'] ?? 'Slide ' . ($si+1));
                 $isFirst = ($si === 0);
               ?>
