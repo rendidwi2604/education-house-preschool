@@ -22,16 +22,25 @@ try {
         );
         $stmtBG->execute($beritaIds);
         foreach ($stmtBG->fetchAll() as $bg) {
-            // Normalize URL — pastikan path lokal tidak ada double slash
             $url = $bg['url'];
             if (!str_starts_with($url, 'https://') && !str_starts_with($url, 'http://')) {
                 $url = ltrim($url, '/');
             }
             $beritaGambarMap[$bg['berita_id']][] = $url;
         }
+
+        // Fallback per berita: jika berita tidak punya gambar di berita_gambar,
+        // gunakan kolom gambar lama
+        foreach ($berita as $b) {
+            if (empty($beritaGambarMap[$b['id']]) && !empty($b['gambar'])) {
+                $beritaGambarMap[$b['id']][] = str_starts_with($b['gambar'], 'https://')
+                    ? $b['gambar']
+                    : 'assets/uploads/galeri/' . $b['gambar'];
+            }
+        }
     }
 } catch (PDOException $e) {
-    // Tabel belum ada, fallback ke kolom gambar lama
+    // Tabel berita_gambar belum ada — fallback ke kolom gambar lama
     foreach ($berita as $b) {
         if (!empty($b['gambar'])) {
             $beritaGambarMap[$b['id']][] = str_starts_with($b['gambar'], 'https://')
