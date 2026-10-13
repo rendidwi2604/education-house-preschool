@@ -67,7 +67,12 @@
         <!-- Admin user -->
         <a class="admin-user" href="profil.php">
           <?php if (!empty($_SESSION['admin_foto'])): ?>
-            <img src="../assets/uploads/admin/<?= h($_SESSION['admin_foto']) ?>" alt="Foto profil">
+          <?php
+            $sessionFotoUrl = (str_starts_with($_SESSION['admin_foto'], 'https://') || str_starts_with($_SESSION['admin_foto'], 'http://'))
+                ? $_SESSION['admin_foto']
+                : '../assets/uploads/admin/' . $_SESSION['admin_foto'];
+          ?>
+          <img src="<?= h($sessionFotoUrl) ?>" alt="Foto profil" loading="lazy">
           <?php else: ?>
             <span class="admin-avatar" style="background:#EAF5E8;display:flex;align-items:center;justify-content:center;">
               <i class="fa-solid fa-user" style="color:#328C39;font-size:14px;"></i>

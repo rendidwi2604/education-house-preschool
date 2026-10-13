@@ -1,14 +1,15 @@
 ﻿<?php
 require __DIR__ . '/includes/auth.php';
+require __DIR__ . '/../includes/storage.php';
 
 $stmt = $pdo->prepare('SELECT id, username, nama, foto, created_at FROM admin WHERE id = ?');
 $stmt->execute([$_SESSION['admin_id']]);
 $admin = $stmt->fetch();
 
-if (!$admin) { session_destroy(); redirect('/admin/login.php'); exit; }
+if (!$admin) { session_destroy(); redirect('/admin/login.php'); }
 
 $page_title = 'Profil Saya';
-$error = '';
+$error   = '';
 $success = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -17,33 +18,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($nama === '') {
         $error = 'Nama wajib diisi.';
-    } elseif (!empty($_FILES['foto']['name'])) {
+    } elseif (!empty($_FILES['foto']['name']) && $_FILES['foto']['error'] !== UPLOAD_ERR_NO_FILE) {
         $izin = ['jpg', 'jpeg', 'png', 'webp'];
-        $ext = strtolower(pathinfo($_FILES['foto']['name'], PATHINFO_EXTENSION));
-        if (!in_array($ext, $izin, true)) {
+        $ext  = strtolower(pathinfo($_FILES['foto']['name'], PATHINFO_EXTENSION));
+
+        if ($_FILES['foto']['error'] !== UPLOAD_ERR_OK) {
+            $error = 'Foto gagal diunggah. Coba lagi.';
+        } elseif (!in_array($ext, $izin, true)) {
             $error = 'Format foto harus JPG, PNG, atau WEBP.';
         } elseif ($_FILES['foto']['size'] > 3 * 1024 * 1024) {
             $error = 'Ukuran foto maksimal 3MB.';
-        } elseif (!is_uploaded_file($_FILES['foto']['tmp_name'])) {
-            $error = 'Foto gagal diunggah.';
         } else {
-            $folder = __DIR__ . '/../assets/uploads/admin/';
-            if (!is_dir($folder) && !mkdir($folder, 0755, true)) {
-                $error = 'Folder foto profil tidak dapat dibuat.';
-            } else {
-                $fotoBaru = 'admin_' . $admin['id'] . '_' . time() . '.' . $ext;
-                if (!move_uploaded_file($_FILES['foto']['tmp_name'], $folder . $fotoBaru)) {
-                    $error = 'Foto gagal disimpan.';
-                } else {
-                    $foto = $fotoBaru;
-                    if ($admin['foto'] && is_file($folder . $admin['foto'])) unlink($folder . $admin['foto']);
+            $fotoBaru = 'admin_' . $admin['id'] . '_' . time() . '.' . $ext;
+            $mime     = mime_from_ext($ext);
+            $fotoUrl  = null;
+
+            // Upload ke Supabase Storage
+            if (getenv('SUPABASE_URL') && getenv('SUPABASE_KEY')) {
+                $result = supabase_upload($_FILES['foto']['tmp_name'], 'admin', $fotoBaru, $mime);
+                if ($result['ok']) {
+                    $fotoUrl = $result['url'];
                 }
+            }
+
+            // Fallback ke lokal (XAMPP)
+            if ($fotoUrl === null) {
+                $localDir = defined('APP_ROOT') ? APP_ROOT . '/assets/uploads/admin/' : __DIR__ . '/../assets/uploads/admin/';
+                if (is_writable($localDir) || (!is_dir($localDir) && mkdir($localDir, 0755, true))) {
+                    if (move_uploaded_file($_FILES['foto']['tmp_name'], $localDir . $fotoBaru)) {
+                        $fotoUrl = $fotoBaru;
+                    }
+                }
+            }
+
+            if ($fotoUrl !== null) {
+                $foto = $fotoUrl;
+            } else {
+                $error = 'Foto gagal disimpan. Pastikan SUPABASE_URL & SUPABASE_KEY sudah diset di Vercel.';
             }
         }
     }
 
     if ($error === '') {
-        $pdo->prepare('UPDATE admin SET nama = ?, foto = ? WHERE id = ?')->execute([$nama, $foto, $admin['id']]);
+        $pdo->prepare('UPDATE admin SET nama = ?, foto = ? WHERE id = ?')
+            ->execute([$nama, $foto, $admin['id']]);
         $_SESSION['admin_nama'] = $nama;
         $_SESSION['admin_foto'] = $foto;
         $admin['nama'] = $nama;
@@ -67,8 +85,16 @@ require __DIR__ . '/includes/admin_header.php';
   <!-- Left: Profile card -->
   <div>
     <div class="panel profile-card">
-      <?php if ($admin['foto']): ?>
-      <img class="profile-photo" src="../assets/uploads/admin/<?= h($admin['foto']) ?>" alt="<?= h($admin['nama']) ?>">
+      <?php
+        $fotoAdminUrl = '';
+        if (!empty($admin['foto'])) {
+            $fotoAdminUrl = (str_starts_with($admin['foto'], 'https://') || str_starts_with($admin['foto'], 'http://'))
+                ? $admin['foto']
+                : '../assets/uploads/admin/' . $admin['foto'];
+        }
+      ?>
+      <?php if ($fotoAdminUrl): ?>
+      <img class="profile-photo" src="<?= h($fotoAdminUrl) ?>" alt="<?= h($admin['nama']) ?>">
       <?php else: ?>
       <div class="profile-placeholder">
         <i class="fa-solid fa-user" style="color:#7952D9;font-size:36px;"></i>
