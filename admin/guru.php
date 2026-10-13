@@ -56,9 +56,14 @@ require __DIR__ . '/includes/admin_header.php';
       <div style="padding:18px 16px;">
         <!-- Photo -->
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
-          <?php if ($g['foto']): ?>
-          <img src="../assets/uploads/guru/<?= h($g['foto']) ?>"
-               style="width:50px;height:50px;border-radius:50%;object-fit:cover;border:2.5px solid <?= $c ?>;flex-shrink:0;">
+          <?php if ($g['foto']):
+            $guruFotoUrl = (str_starts_with($g['foto'], 'https://') || str_starts_with($g['foto'], 'http://'))
+                ? $g['foto']
+                : '../assets/uploads/guru/' . $g['foto'];
+          ?>
+          <img src="<?= h($guruFotoUrl) ?>"
+               style="width:50px;height:50px;border-radius:50%;object-fit:cover;border:2.5px solid <?= $c ?>;flex-shrink:0;"
+               loading="lazy">
           <?php else: ?>
           <div style="width:50px;height:50px;border-radius:50%;background:<?= $c ?>18;border:2.5px solid <?= $c ?>;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
             <i class="fa-solid fa-user" style="color:<?= $c ?>;font-size:20px;"></i>

@@ -591,11 +591,24 @@ require 'includes/header.php';
            aria-label="Lihat profil lengkap <?= h($g['nama']) ?>">
         <?php if ($g['foto']): ?>
         <div class="w-24 h-24 mx-auto rounded-full overflow-hidden border-4 border-<?= $border_color ?> shadow-md mb-4">
-          <?php $guruWebp = webp_src('assets/uploads/guru', $g['foto']); ?>
-          <picture>
-            <source srcset="<?= h($guruWebp) ?>" type="image/webp">
-            <img src="assets/uploads/guru/<?= h($g['foto']) ?>" alt="<?= h($g['nama']) ?>" class="w-full h-full object-cover" loading="lazy" width="96" height="96">
-          </picture>
+          <?php
+            $guruFotoUrl = '';
+            if (!empty($g['foto'])) {
+                if (str_starts_with($g['foto'], 'https://') || str_starts_with($g['foto'], 'http://')) {
+                    $guruFotoUrl = $g['foto'];
+                } else {
+                    $guruFotoUrl = webp_src('assets/uploads/guru', $g['foto']);
+                }
+            }
+          ?>
+          <?php if ($guruFotoUrl): ?>
+          <img src="<?= h($guruFotoUrl) ?>" alt="<?= h($g['nama']) ?>"
+               class="w-full h-full object-cover" loading="lazy" width="96" height="96">
+          <?php else: ?>
+          <div class="w-full h-full bg-slate-200 flex items-center justify-center">
+            <i class="fa-solid fa-user text-slate-400 text-3xl"></i>
+          </div>
+          <?php endif; ?>
         </div>
         <?php else: ?>
         <div class="w-24 h-24 mx-auto rounded-full bg-<?= $badge_bg ?> border-4 border-<?= $border_color ?> shadow-md mb-4 flex items-center justify-center text-slate-400 text-2xl">

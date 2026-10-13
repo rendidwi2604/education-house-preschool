@@ -1,5 +1,6 @@
 ﻿<?php
 require __DIR__ . '/includes/auth.php';
+require __DIR__ . '/../includes/storage.php';
 
 $id = isset($_GET['id']) ? (int) $_GET['id'] : null;
 $data = ['nama'=>'','jabatan'=>'','bidang'=>'','pendidikan'=>'','pengalaman'=>'','bio'=>'','foto'=>null];
@@ -28,25 +29,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         if (isset($_FILES['foto']) && $_FILES['foto']['error'] !== UPLOAD_ERR_NO_FILE) {
             $izin = ['jpg','jpeg','png','webp'];
-            $ext = strtolower(pathinfo($_FILES['foto']['name'], PATHINFO_EXTENSION));
-          if ($_FILES['foto']['error'] !== UPLOAD_ERR_OK) {
-            $error = 'Foto gagal diupload. Silakan coba lagi.';
-          } elseif (!in_array($ext, $izin, true)) {
+            $ext  = strtolower(pathinfo($_FILES['foto']['name'], PATHINFO_EXTENSION));
+
+            if ($_FILES['foto']['error'] !== UPLOAD_ERR_OK) {
+                $error = 'Foto gagal diupload. Silakan coba lagi.';
+            } elseif (!in_array($ext, $izin, true)) {
                 $error = 'Format foto harus JPG, PNG, atau WEBP.';
             } elseif ($_FILES['foto']['size'] > 3 * 1024 * 1024) {
                 $error = 'Ukuran foto maksimal 3MB.';
             } else {
-                $namaBaru = 'guru_' . time() . '_' . rand(100,999) . '.' . $ext;
-            $tujuanFoto = __DIR__ . '/../assets/uploads/guru/' . $namaBaru;
-            if (move_uploaded_file($_FILES['foto']['tmp_name'], $tujuanFoto)) {
-              $foto = $namaBaru;
-            } else {
-              $error = 'Foto gagal disimpan. Periksa folder upload.';
-            }
+                $namaBaru = 'guru_' . time() . '_' . rand(100, 999) . '.' . $ext;
+                $mime     = mime_from_ext($ext);
+                $fotoUrl  = null;
+
+                // Coba upload ke Supabase Storage
+                if (getenv('SUPABASE_URL') && getenv('SUPABASE_KEY')) {
+                    $result = supabase_upload($_FILES['foto']['tmp_name'], 'guru', $namaBaru, $mime);
+                    if ($result['ok']) {
+                        $fotoUrl = $result['url'];
+                    }
+                }
+
+                // Fallback ke lokal (XAMPP)
+                if ($fotoUrl === null) {
+                    $localDir = defined('APP_ROOT') ? APP_ROOT . '/assets/uploads/guru/' : __DIR__ . '/../assets/uploads/guru/';
+                    if (is_writable($localDir)) {
+                        if (move_uploaded_file($_FILES['foto']['tmp_name'], $localDir . $namaBaru)) {
+                            $fotoUrl = $namaBaru;
+                        }
+                    }
+                }
+
+                if ($fotoUrl !== null) {
+                    $foto = $fotoUrl;
+                } else {
+                    $error = 'Foto gagal disimpan. Pastikan SUPABASE_URL & SUPABASE_KEY sudah diset di Vercel.';
+                }
             }
         }
+
         if ($error === '') {
-          $fotoLama = $data['foto'];
             if ($id) {
                 $pdo->prepare("UPDATE guru SET nama=?,jabatan=?,bidang=?,pendidikan=?,pengalaman=?,bio=?,foto=? WHERE id=?")
                     ->execute([$nama,$jabatan,$bidang,$pendidikan,$pengalaman,$bio,$foto,$id]);
@@ -54,12 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $pdo->prepare("INSERT INTO guru (nama,jabatan,bidang,pendidikan,pengalaman,bio,foto) VALUES (?,?,?,?,?,?,?)")
                     ->execute([$nama,$jabatan,$bidang,$pendidikan,$pengalaman,$bio,$foto]);
             }
-                if ($id && $foto !== $fotoLama && $fotoLama) {
-                  $pathFotoLama = __DIR__ . '/../assets/uploads/guru/' . $fotoLama;
-                  if (is_file($pathFotoLama)) unlink($pathFotoLama);
-                }
             redirect('/admin/guru.php?tersimpan=1');
-            exit;
         }
     }
     $data = compact('nama','jabatan','bidang','pendidikan','pengalaman','bio','foto');
@@ -140,10 +157,21 @@ require __DIR__ . '/includes/admin_header.php';
 
     <!-- Current photo preview -->
     <div style="text-align:center;margin-bottom:14px;">
-      <?php if ($data['foto']): ?>
-      <img src="../assets/uploads/guru/<?= h($data['foto']) ?>"
+      <?php
+        $fotoUrl = '';
+        if (!empty($data['foto'])) {
+            if (str_starts_with($data['foto'], 'https://') || str_starts_with($data['foto'], 'http://')) {
+                $fotoUrl = $data['foto']; // Supabase Storage URL
+            } else {
+                $fotoUrl = '../assets/uploads/guru/' . $data['foto']; // file lokal
+            }
+        }
+      ?>
+      <?php if ($fotoUrl): ?>
+      <img src="<?= h($fotoUrl) ?>"
            id="fotoPreview"
-           style="width:100px;height:100px;border-radius:50%;object-fit:cover;border:3px solid #7952D9;box-shadow:0 4px 14px rgba(121,82,217,.25);">
+           style="width:100px;height:100px;border-radius:50%;object-fit:cover;border:3px solid #7952D9;box-shadow:0 4px 14px rgba(121,82,217,.25);"
+           loading="lazy">
       <?php else: ?>
       <div id="fotoPreviewPlaceholder"
            style="width:100px;height:100px;border-radius:50%;background:#EDE9FE;border:3px solid #7952D9;display:flex;align-items:center;justify-content:center;margin:0 auto;">
