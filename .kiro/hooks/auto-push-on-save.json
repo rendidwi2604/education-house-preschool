@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Auto Push ke GitHub",
+      "trigger": "PostFileSave",
+      "description": "Auto git add, commit, dan push ke GitHub setiap kali file PHP/CSS/JS/JSON disimpan di workspace.",
+      "matcher": "\\\\.(php|css|js|json|sql|md|html)$",
+      "action": {
+        "type": "command",
+        "command": "cd \"c:\\php\\htdocs\\education_hp\" && git add . && git diff --cached --quiet || git commit -m \"auto: update $(git diff --cached --name-only | head -3 | tr '\\n' ' ')\" && git push",
+        "timeout": 60
+      }
+    }
+  ]
+}

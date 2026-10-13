@@ -156,8 +156,8 @@ Password : [password yang dibuat di step 3.1]
 1. Buka [github.com](https://github.com) → login
 2. Klik **"+"** (kanan atas) → **"New repository"**
 3. Isi:
-   - **Repository name:** `education-house-preschool`
    - **Visibility:** `Private` ← pilih ini agar kode tidak publik
+   - **Repository name:** `education-house-preschool`
 4. Klik **"Create repository"**
 
 ### 5.2 Siapkan File Sebelum Upload
