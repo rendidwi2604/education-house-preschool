@@ -1,6 +1,7 @@
 <?php
 // Hash SHA-256 dari kode lembaga. Kode asli tidak disimpan di database.
-const ADMIN_INSTITUTION_CODE_HASH = 'f8c2f59a32c9f2d30b742ea8411031e335c16d432eda09c64183b0499c9e0f81';
+// Kode lembaga saat ini: EduHouse2026
+const ADMIN_INSTITUTION_CODE_HASH = 'a6a6a3864ba9a1047cbc413a51b40cbedbe50be70dcffd3d4f1a950e4cf9ade2';
 
 function validAdminInstitutionCode($code) {
     return hash_equals(ADMIN_INSTITUTION_CODE_HASH, hash('sha256', trim($code)));
