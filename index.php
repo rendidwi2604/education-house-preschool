@@ -199,7 +199,7 @@ require 'includes/header.php';
               </div>
               <div class="text-left leading-tight">
                 <span class="block text-xs font-bold text-slate-800">Lingkungan Aman</span>
-                <span class="text-[11px] text-slate-500 font-medium">CCTV & Ber-AC</span>
+                <span class="text-[11px] text-slate-500 font-medium">Belajar yang nyaman & Ber-AC</span>
               </div>
             </div>
             <div class="flex items-center gap-2.5 p-1.5 sm:p-2 rounded-xl bg-rose-50/70 border border-rose-100">
