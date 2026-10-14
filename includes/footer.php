@@ -74,7 +74,7 @@
     <div>
       <h4 style="font-family:'Baloo 2',sans-serif;font-size:12px;font-weight:800;color:#E0E7FF;text-transform:uppercase;letter-spacing:.07em;margin:0 0 14px;">Program</h4>
       <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:9px;">
-        <?php foreach (['Toodler(1,5 - 3 tahun)','Playgroup(3–4 tahun)','Kindergarten A (4-5 tahun)','Kinderkarten B (5-6 tahun)'] as $p): ?>
+        <?php foreach (['Toddler(1,5 - 3 tahun)','Playgroup(3–4 tahun)','Kindergarten A (4-5 tahun)','Kindergarten B (5-6 tahun)'] as $p): ?>
         <li>
           <a href="index.php#ppdb"
              style="font-size:14px;color:#E5F5E1;text-decoration:none;display:inline-flex;align-items:center;gap:5px;transition:color .15s;"
